@@ -9,6 +9,63 @@ CREATE TABLE users(
     Password varchar(200)
 );
 
+CREATE TABLE users_cart(
+    Id int PRIMARY KEY AUTO_INCREMENT,
+    --User Details
+    Username varchar(200),
+
+    --Product Details
+    product_name VARCHAR(255) NOT NULL,
+    product_discription TEXT NOT NULL,
+    product_quantity INT,
+    product_cost Numeric,
+    FOREIGN KEY (product_id) REFERENCES users(id)
+);
+
+-- Create Product table with foreign key linking to user
+CREATE TABLE product (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_seller VARCHAR(200) NOT NULL,
+    product_name VARCHAR(255) NOT NULL,
+    product_discription TEXT NOT NULL,
+    product_quantity INT,
+    product_cost Numeric,
+    product_img TEXT
+);
+
+-- Create comments table with foreign key linking to product
+CREATE TABLE comments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT,
+    author VARCHAR(255),
+    comment TEXT,
+    FOREIGN KEY (product_id) REFERENCES product(id)
+);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
 -- Create discussion table with foreign key linking to user
 CREATE TABLE discussion (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -25,3 +82,4 @@ CREATE TABLE comments (
     comment TEXT,
     FOREIGN KEY (discussion_id) REFERENCES discussion(id)
 );
+*/

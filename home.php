@@ -38,7 +38,7 @@ if (!isset($_SESSION['valid'])) {
                 $res_id = $result['Id'];
             }
 
-            echo "<a href='edit.php?Id=$res_id'>Change Profile Information</a>";
+            echo "<a href='edituserinfo.php?Id=$res_id'>Change Profile Information</a>";
             ?>
 
             <a href="php/logout.php"> <button class="btn">Log Out</button> </a>
@@ -64,72 +64,9 @@ if (!isset($_SESSION['valid'])) {
             </div>-->
         </div>
     </main>
-    <!-- CRUD for Discussions Begin -->
 
-
-    <body>
-        <div class="container-discussion">
-            <?php
-
-            $conn = include("php/config.php");
-            if (isset($_POST['Add-discussion'])) {
-                $title = $_POST['discussion-title'];
-                $author = $res_Uname;
-                $content = $_POST['discussion-content'];
-
-                mysqli_query($con, "INSERT INTO discussion(title,author,content) VALUES('$title','$author','$content')") or die("Error Occured");
-
-                echo "<div class='message'>
-                <p>Discussion added to forum successfully!</p> </div> <br>";
-            }
-
-            ?>
-
-            <header>Create New Discussions</header>
-
-            <form action="" method="post">
-
-                <div class="discussion input">
-                    <label for="title">Discussion Title</label>
-                    <input type="text" name="discussion-title" id="discussion-title" autocomplete="off" required>
-                </div>
-
-                <p>Discussion Author is: <b><?php echo $res_Uname ?></b> </p>
-                <!--
-                <div class="discussion input">
-                    <label for="email">Email</label>
-                    <input type="text" name="email" id="email" autocomplete="off" required>
-                </div>-->
-
-                <div class="discussion input">
-                    <label for="discussion-content">Discussion Content</label>
-                    <input type="Text" name="discussion-content" id="discussion-content" autocomplete="off" required>
-                </div>
-
-                <div class="field">
-
-                    <input type="submit" class="btn" name="Add-discussion" value="Add discussion" required>
-                </div>
-        </div>
-    </body>
-
-    <div class="view-clickable-title">
-        <?php
-
-        $id = $_SESSION['id'];
-        $query = mysqli_query($con, "SELECT*FROM discussion");
-
-        while ($result = mysqli_fetch_assoc($query)) {
-            $res_Uname = $result['Username'];
-            $res_Email = $result['Email'];
-            $res_Age = $result['Age'];
-            $res_id = $result['Id'];
-        }
-
-        echo "<a href='edit.php?Id=$res_id'>Change Profile Information</a>";
-        ?>
-
-    </div>
+    <a href="addproduct.php"> <button class="btn">Add New Product</button> </a>
+    
 </body>
 
 </html>
