@@ -16,7 +16,7 @@ CREATE TABLE users_cart(
 
     --Product Details
     product_name VARCHAR(255) NOT NULL,
-    product_discription TEXT NOT NULL,
+    product_description TEXT NOT NULL,
     product_quantity INT,
     product_cost Numeric,
     FOREIGN KEY (product_id) REFERENCES users(id)
@@ -27,7 +27,7 @@ CREATE TABLE product (
     id INT AUTO_INCREMENT PRIMARY KEY,
     product_seller VARCHAR(200) NOT NULL,
     product_name VARCHAR(255) NOT NULL,
-    product_discription TEXT NOT NULL,
+    product_description TEXT NOT NULL,
     product_quantity INT,
     product_cost Numeric,
     product_img TEXT

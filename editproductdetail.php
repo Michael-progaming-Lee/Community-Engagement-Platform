@@ -1,10 +1,6 @@
 <?php
-session_start();
-
 include("php/config.php");
-if (!isset($_SESSION['valid'])) {
-    header("Location: index.php");
-}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -28,15 +24,17 @@ if (!isset($_SESSION['valid'])) {
         <div class="box form-box">
             <?php
             if (isset($_POST['submit'])) {
+                $product_seller = $res_Uname;
                 $product_name = $_POST['product_name'];
-                $product_discription = $_POST['email'];
-                $product_quantity = $_POST['age'];
+                $product_description = $_POST['product_description'];
+                $product_quantity = $_POST['product_quantity'];
                 $product_cost = $_POST['product_cost'];
+                $product_img = $_POST['product_img'];
 
-                $id = $_SESSION['id'];
+                $id = $_POST['product_id'];
 
-                $edit_query = mysqli_query($con, "UPDATE product SET product_name='$product_name', product_discription='$product_discription',
-                product_quantity='$product_quantity', product_cost='$product_cost' WHERE Id=$id ") or die("error occurred");
+                $edit_query = mysqli_query($con, "UPDATE product SET product_name='$product_name', product_description='$product_description',
+                product_quantity='$product_quantity', product_cost='$product_cost' WHERE id=$id ") or die("error occurred");
 
                 if ($edit_query) {
                     echo "<div class='message'>
@@ -44,17 +42,7 @@ if (!isset($_SESSION['valid'])) {
                 </div> <br>";
                     echo "<a href='home.php'><button class='btn'>Go Home</button>";
                 }
-            } else {
-
-                $id = $_SESSION['id'];
-                $query = mysqli_query($con, "SELECT*FROM users WHERE Id=$id ");
-
-                while ($result = mysqli_fetch_assoc($query)) {
-                    $product_name = $_POST['product_name'];
-                    $product_discription = $_POST['product_discription'];
-                    $product_quantity = $_POST['product_quantity'];
-                    $product_cost = $_POST['product_cost'];
-                }
+            
 
             ?>
                 <header>Change Profile</header>
@@ -79,8 +67,12 @@ if (!isset($_SESSION['valid'])) {
                         <input type="number" name="product_cost" id="product_cost" value="<?php echo $product_cost; ?>" autocomplete="off" required>
                     </div>
 
-                    <div class="field">
+                    <div class="field input">
+                        <label for="product_img">Product Image</label>
+                        <input type="file" name="product_img" id="product_img" accept=".jpg, .jpeg, .png" value="<?php echo $product_img; ?>" autocomplete="off" required>
+                    </div>
 
+                    <div class="field">
                         <input type="submit" class="btn" name="submit" value="Update" required>
                     </div>
 

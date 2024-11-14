@@ -32,7 +32,7 @@
                     echo "<a href='javascript:self.history.back()'><button class='btn'>Go Back</button>";
                 } else {
 
-                    mysqli_query($con, "INSERT INTO users(Username,Email,Age,Password) VALUES('$username','$email','$age','$password')") or die("Erroe Occured");
+                    mysqli_query($con, "INSERT INTO users(Username,Email,Age,Password) VALUES('$username','$email','$age','$password')") or die("Error Occured");
 
                     echo "<div class='message'>
                     <p>Registration successfully!</p> </div> <br>";
@@ -64,9 +64,9 @@
                     </div>
 
                     <div class="field">
-
                         <input type="submit" class="btn" name="submit" value="Register" required>
                     </div>
+
                     <div class="links">
                         Already a member? <a href="index.php">Sign In</a>
                     </div>
