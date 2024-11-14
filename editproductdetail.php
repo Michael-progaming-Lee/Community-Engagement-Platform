@@ -1,4 +1,5 @@
 <?php
+
 include("php/config.php");
 
 ?>
@@ -14,9 +15,14 @@ include("php/config.php");
 </head>
 
 <body>
-    <div class="nav">
+<div class="nav">
         <div class="logo">
             <p><a href="home.php"> Logo</a></p>
+        </div>
+
+        <div class="right-links">
+            <a>Change Product Info</a>
+            <a href="php/logout.php"> <button class="btn">Log Out</button> </a>
         </div>
     </div>
 
@@ -47,6 +53,7 @@ include("php/config.php");
             ?>
                 <header>Change Profile</header>
                 <form action="" method="post">
+
                     <div class="field input">
                         <label for="product_name">Product Name</label>
                         <input type="text" name="product_name" id="product_name" value="<?php echo $product_name; ?>" autocomplete="off" required>
@@ -65,11 +72,6 @@ include("php/config.php");
                     <div class="field input">
                         <label for="product_cost">Product Cost</label>
                         <input type="number" name="product_cost" id="product_cost" value="<?php echo $product_cost; ?>" autocomplete="off" required>
-                    </div>
-
-                    <div class="field input">
-                        <label for="product_img">Product Image</label>
-                        <input type="file" name="product_img" id="product_img" accept=".jpg, .jpeg, .png" value="<?php echo $product_img; ?>" autocomplete="off" required>
                     </div>
 
                     <div class="field">

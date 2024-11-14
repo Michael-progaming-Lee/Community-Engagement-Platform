@@ -24,10 +24,11 @@ if (!isset($_SESSION['valid'])) {
         </div>
 
         <div class="right-links">
-            <a href="#">Change Profile</a>
+            <a>Change Profile Info</a>
             <a href="php/logout.php"> <button class="btn">Log Out</button> </a>
         </div>
     </div>
+    
     <div class="container">
         <div class="box form-box">
             <?php
