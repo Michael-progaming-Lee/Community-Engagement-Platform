@@ -29,7 +29,7 @@ if (!isset($_SESSION['valid'])) {
             <?php
 
             $id = $_SESSION['id'];
-            $query = mysqli_query($con, "SELECT*FROM users WHERE Id=$id");
+            $query = mysqli_query($conn, "SELECT*FROM users WHERE Id=$id");
 
             while ($result = mysqli_fetch_assoc($query)) {
                 //user logins
@@ -39,7 +39,7 @@ if (!isset($_SESSION['valid'])) {
                 $res_id = $result['Id'];
             }
 
-            echo "<a href='search.php?Id=$res_id'>Edit Product Detail</a>";
+            echo "<a href='manage_product.php?Id=$res_id'>Edit Product Detail</a>";
             ?>
 
             <a href="php/logout.php"> <button class="btn">Log Out</button> </a>

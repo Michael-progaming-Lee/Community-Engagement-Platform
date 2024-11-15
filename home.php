@@ -55,6 +55,7 @@ if ($resultd ->num_rows > 0):
 
             .product-img {
                 width: 100%;
+                align-items: center;
                 height: auto;
             }
 
@@ -82,7 +83,7 @@ if ($resultd ->num_rows > 0):
                 <?php
 
                 $id = $_SESSION['id'];
-                $query = mysqli_query($con, "SELECT*FROM users WHERE Id=$id");
+                $query = mysqli_query($conn, "SELECT*FROM users WHERE Id=$id");
 
                 while ($result = mysqli_fetch_assoc($query)) {
                     $res_Uname = $result['Username'];
@@ -114,13 +115,14 @@ if ($resultd ->num_rows > 0):
         </main>
 
         <a href="addproduct.php"> <button class="btn">Add New Product</button> </a>
+        <a href="users_cart.php"> <button class="btn">View Yoour Cart</button> </a>
 
         <h1>Product Store</h1>
         <div class="product-grid">
             <?php while ($row = $resultd ->fetch_assoc()): ?>
                 <div class="product-item">
                     <a href="product_details.php?id=<?php echo $row['id']; ?>">
-                        <img src="<?php echo $row['product_img']; ?>" alt="<?php echo $row['product_name']; ?>" class="product-img">
+                    <img src="<?php echo $row['product_img']; ?>" alt="<?php echo $row['product_img']; ?>" class="product-img">
                         <div class="product-name"><?php echo $row['product_name']; ?></div>
                         <div class="product-cost">$<?php echo number_format($row['product_cost'], 2); ?></div>
                     </a>

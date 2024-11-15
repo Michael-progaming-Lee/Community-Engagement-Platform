@@ -13,13 +13,18 @@ CREATE TABLE users_cart(
     Id int PRIMARY KEY AUTO_INCREMENT,
     --User Details
     Username varchar(200),
+    UserID INT,
 
     --Product Details
+    product_id INT;
     product_name VARCHAR(255) NOT NULL,
     product_description TEXT NOT NULL,
     product_quantity INT,
     product_cost Numeric,
-    FOREIGN KEY (product_id) REFERENCES users(id)
+    product_img TEXT,
+    product_total Numeric,
+    FOREIGN KEY (UserID) REFERENCES users(id),
+    FOREIGN KEY (product_id) REFERENCES product(id)
 );
 
 -- Create Product table with foreign key linking to user
