@@ -16,8 +16,9 @@ CREATE TABLE users_cart(
     UserID INT,
 
     --Product Details
-    product_id INT;
+    product_id INT,
     product_name VARCHAR(255) NOT NULL,
+    product_category VARCHAR(255) NOT NULL,
     product_description TEXT NOT NULL,
     product_quantity INT,
     product_cost Numeric,
@@ -32,6 +33,7 @@ CREATE TABLE product (
     id INT AUTO_INCREMENT PRIMARY KEY,
     product_seller VARCHAR(200) NOT NULL,
     product_name VARCHAR(255) NOT NULL,
+    product_category VARCHAR(255) NOT NULL,
     product_description TEXT NOT NULL,
     product_quantity INT,
     product_cost Numeric,

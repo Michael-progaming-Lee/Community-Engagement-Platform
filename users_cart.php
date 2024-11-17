@@ -32,7 +32,9 @@ $total_cost = 0;
     <table border="1">
         <thead>
             <tr>
-                <th>Product</th>
+                <th>Product Image</th>
+                <th>Product Name</th>
+                <th>Product ID</th>
                 <th>Description</th>
                 <th>Quantity</th>
                 <th>Cost</th>
@@ -44,6 +46,8 @@ $total_cost = 0;
                 <?php $total_cost += $row['product_total']; ?>
                 <tr>
                     <td><img src="<?php echo $row['product_img']; ?>" alt="<?php echo $row['product_name']; ?>" style="width:50px;"></td>
+                    <td><?php echo $row['product_name']; ?></td>
+                    <td><?php echo $row['product_id']; ?></td>
                     <td><?php echo $row['product_description']; ?></td>
                     <td><?php echo $row['product_quantity']; ?></td>
                     <td>$<?php echo number_format($row['product_cost'], 2); ?></td>

@@ -115,7 +115,7 @@ if ($resultd ->num_rows > 0):
         </main>
 
         <a href="addproduct.php"> <button class="btn">Add New Product</button> </a>
-        <a href="users_cart.php"> <button class="btn">View Yoour Cart</button> </a>
+        <a href="users_cart.php"> <button class="btn">View Your Cart</button> </a>
 
         <h1>Product Store</h1>
         <div class="product-grid">

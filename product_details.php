@@ -33,15 +33,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $product_total = $rent_quantity * $product['product_cost'];
 
         // Insert into users_cart
-        $insert_query = "INSERT INTO users_cart (Username, UserID, product_id, product_name, product_description, product_quantity, product_cost, product_img, product_total)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $insert_query = "INSERT INTO users_cart (Username, UserID, product_id, product_name, product_category, product_description, product_quantity, product_cost, product_img, product_total)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($insert_query);
         $stmt->bind_param(
-            "siissidss",
+            "siisssidss",
             $username,
             $user_id,
             $product_id,
             $product['product_name'],
+            $product['product_category'],
             $product['product_description'],
             $rent_quantity,
             $product['product_cost'],
@@ -85,7 +86,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
 
     <h1><?php echo $product['product_name']; ?></h1>
-    <img src="<?php echo $product['product_img']; ?>" alt="<?php echo $product['product_name']; ?>" style="width:300px;">
+    <img src="<?php echo $product['product_img'];?>" alt="<?php echo $product['product_name']; ?>" style="width:300px;">
+    <p><strong>Product ID:</strong> <?php echo $product['id']; ?></p>
+    <p><strong>Category:</strong> <?php echo $product['product_category']; ?></p>
     <p><strong>Description:</strong> <?php echo $product['product_description']; ?></p>
     <p><strong>Available Quantity:</strong> <?php echo $product['product_quantity']; ?></p>
     <p><strong>Cost:</strong> $<?php echo number_format($product['product_cost'], 2); ?></p>
