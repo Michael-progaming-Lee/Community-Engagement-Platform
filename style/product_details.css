@@ -1,0 +1,266 @@
+/* Styles for Product Details page */
+.container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Product Name Header */
+.product-name {
+    font-size: 2em;
+    color: #333;
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+/* Product Image */
+.product-image {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.product-image img {
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Product Information */
+.product-info {
+    margin-bottom: 30px;
+}
+
+.info-item {
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+
+.info-item .label {
+    font-weight: 600;
+    color: #495057;
+    display: inline-block;
+    width: 150px;
+}
+
+.info-item .value {
+    color: #333;
+}
+
+.info-item .price {
+    color: #28a745;
+    font-weight: 600;
+}
+
+/* Rent Section */
+.rent-section {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.rent-section h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+}
+
+.rent-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.form-group label {
+    color: #495057;
+    font-weight: 500;
+}
+
+.form-group input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1em;
+    width: 100px;
+}
+
+.rent-btn {
+    background-color: #28a745;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: background-color 0.3s;
+    align-self: flex-start;
+}
+
+.rent-btn:hover {
+    background-color: #218838;
+}
+
+/* Owner Message */
+.owner-message {
+    background-color: #e9ecef;
+    color: #495057;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+    text-align: center;
+    border: 1px solid #dee2e6;
+}
+
+.owner-message p {
+    margin: 0;
+    font-size: 1.1em;
+}
+
+/* Messages */
+.success {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 15px;
+    border-radius: 4px;
+    margin-top: 20px;
+}
+
+.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 15px;
+    border-radius: 4px;
+    margin-top: 20px;
+}
+
+/* Comments Container */
+.comments-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Comments Section */
+.comments-section {
+    width: 100%;
+}
+
+.comments-section h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f8f9fa;
+}
+
+/* Comment Form */
+.comment-form {
+    margin-bottom: 30px;
+}
+
+.comment-form textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: vertical;
+    font-family: inherit;
+    margin-bottom: 10px;
+}
+
+.comment-btn {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s;
+}
+
+.comment-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Comments List */
+.comments-list {
+    margin-top: 20px;
+}
+
+.comment {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.comment-author {
+    font-weight: 600;
+    color: #495057;
+}
+
+.comment-date {
+    color: #6c757d;
+    font-size: 0.9em;
+}
+
+.comment-content {
+    color: #333;
+    line-height: 1.5;
+}
+
+.no-comments {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 20px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+        margin: 10px;
+    }
+
+    .product-name {
+        font-size: 1.5em;
+    }
+
+    .info-item .label {
+        display: block;
+        width: 100%;
+        margin-bottom: 5px;
+    }
+
+    .rent-section {
+        padding: 15px;
+    }
+
+    .rent-btn {
+        width: 100%;
+    }
+}

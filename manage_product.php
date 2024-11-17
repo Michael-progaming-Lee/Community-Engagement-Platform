@@ -1,173 +1,212 @@
 <?php
 session_start();
-include 'php/config.php'; // Include the database connection
+include("php/config.php");
 
-// Database configuration
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "community_engagement_db";
+if (!isset($_SESSION['valid'])) {
+    header("Location: index.php");
+}
 
-// Create connection
-$conn = mysqli_connect($servername, $username, $password, $dbname);
+$id = $_SESSION['id'];
+$query = mysqli_query($con, "SELECT * FROM users WHERE Id=$id");
+$result = mysqli_fetch_assoc($query);
+$username = $result['Username'];
 
-$error = ""; // Variable to store error messages
+// Initialize error variable
+$error = "";
 $product = null; // Variable to store product details if found
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $product_id = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
-    $action = isset($_POST['action']) ? $_POST['action'] : '';
-
-    // Check if product ID exists in the database
-    $query = "SELECT * FROM product WHERE id = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("i", $product_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        $product = $result->fetch_assoc();
-
-        if ($action == 'update') {
-            // Update logic
-            $product_name = $_POST['product_name'];
-            $product_description = $_POST['product_description'];
-            $product_quantity = (int)$_POST['product_quantity'];
-            $product_cost = (float)$_POST['product_cost'];
-
-            $update_query = "UPDATE product
-                            SET product_name = ?,
-                                product_description = ?,
-                                product_quantity = ?,
-                                product_cost = ?
-                            WHERE id = ?";
-            $update_stmt = $conn->prepare($update_query);
-            $update_stmt->bind_param(
-                "ssidi",
-                $product_name,
-                $product_description,
-                $product_quantity,
-                $product_cost,
-                $product_id
-            );
-
-            if ($update_stmt->execute()) {
-                echo "<p class='success'>Product updated successfully.</p>";
-            } else {
-                $error = "Error updating product: " . $conn->error;
-            }
-        } elseif ($action == 'delete') {
-            // Delete logic
-            $delete_query = "DELETE FROM product WHERE id = ?";
-            $delete_stmt = $conn->prepare($delete_query);
-            $delete_stmt->bind_param("i", $product_id);
-
-            if ($delete_stmt->execute()) {
-                echo "<p class='success'>Product deleted successfully.</p>";
-            } else {
-                $error = "Error deleting product: " . $conn->error;
-            }
-        }
-    } else {
-        $error = "Product ID not found.";
-    }
-    $stmt->close();
-    $conn->close();
-}
+// Get products for this user only
+$products_query = "SELECT * FROM product WHERE product_seller = ?";
+$stmt = $con->prepare($products_query);
+$stmt->bind_param("s", $username);
+$stmt->execute();
+$products_result = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Product</title>
-    <link rel="stylesheet" href="style/manage_product_style.css">
+    <link rel="stylesheet" href="style/style.css">
+    <link rel="stylesheet" href="style/manage_product.css">
+    <title>Manage Your Products</title>
 </head>
-
 <body>
-    <div class="nav">
-        <div class="logo">
-            <p><a href="home.php">Logo</a> </p>
+    <?php include("php/header.php"); ?>
+
+    <div class="container">
+        <h1>Manage Products</h1>
+
+        <!-- Display user's current products -->
+        <div class="current-products">
+            <h2>Your Products</h2>
+            <?php if ($products_result->num_rows > 0): ?>
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Image</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th>Quantity</th>
+                            <th>Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php while ($product_row = $products_result->fetch_assoc()): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($product_row['id']); ?></td>
+                                <td>
+                                    <img src="<?php echo htmlspecialchars($product_row['product_img']); ?>" 
+                                         alt="<?php echo htmlspecialchars($product_row['product_name']); ?>" 
+                                         style="width: 50px; height: 50px; object-fit: cover;">
+                                </td>
+                                <td><?php echo htmlspecialchars($product_row['product_name']); ?></td>
+                                <td><?php echo htmlspecialchars($product_row['product_category']); ?></td>
+                                <td><?php echo htmlspecialchars($product_row['product_description']); ?></td>
+                                <td><?php echo htmlspecialchars($product_row['product_quantity']); ?></td>
+                                <td>$<?php echo number_format($product_row['product_cost'], 2); ?></td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <p>You haven't added any products yet. <a href="addproduct.php">Add your first product</a></p>
+            <?php endif; ?>
         </div>
 
-        <div class="right-links">
+        <hr class="section-divider">
 
-            <?php
-
-            $id = $_SESSION['id'];
-            $query = mysqli_query($conn, "SELECT*FROM users WHERE Id=$id");
-
-            while ($result = mysqli_fetch_assoc($query)) {
-                $res_Uname = $result['Username'];
-                $res_Email = $result['Email'];
-                $res_Age = $result['Age'];
-                $res_id = $result['Id'];
-            }
-
-
-            ?>
-
-            <a href="php/logout.php"> <button class="btn">Log Out</button> </a>
-
-        </div>
-    </div>
-
-    <h1>Manage Product</h1>
-
-    <form method="post">
-        <label for="product_id">Enter Product ID:</label>
-        <input type="number" id="product_id" name="product_id" required>
-        <br><br>
-
-        <label for="action">Select Action:</label>
-        <select id="action" name="action" required>
-            <option value="">--Choose Action--</option>
-            <option value="update">Update Product</option>
-            <option value="delete">Delete Product</option>
-        </select>
-        <br><br>
-
-        <!-- Update Fields -->
-        <div id="update-fields" style="display: none;">
+        <!-- Update or Delete Product Form -->
+        <div class="manage-form">
+            <h2>Update or Delete Product</h2>
+            <p>Enter the ID of the product you want to modify from your products list above:</p>
             
-            <label for="product_name">Product Name:</label>
-            <input type="text" id="product_name" name="product_name" value="<?php echo isset($product['product_name']) ? $product['product_name'] : ''; ?>">
-            <br><br>
+            <form method="post">
+                <div class="form-group">
+                    <label for="product_id">Product ID:</label>
+                    <input type="number" id="product_id" name="product_id" required>
+                </div>
 
-            <label for="product_description">Product Description:</label>
-            <textarea id="product_description" name="product_description"><?php echo isset($product['product_description']) ? $product['product_description'] : ''; ?></textarea>
-            <br><br>
+                <div class="form-group">
+                    <label for="action">Select Action:</label>
+                    <select id="action" name="action" required>
+                        <option value="">--Choose Action--</option>
+                        <option value="update">Update Product</option>
+                        <option value="delete">Delete Product</option>
+                    </select>
+                </div>
 
-            <label for="product_quantity">Product Quantity:</label>
-            <input type="number" id="product_quantity" name="product_quantity" value="<?php echo isset($product['product_quantity']) ? $product['product_quantity'] : ''; ?>">
-            <br><br>
+                <!-- Update Fields -->
+                <div id="update-fields" style="display: none;">
+                    <div class="form-group">
+                        <label for="product_name">Product Name:</label>
+                        <input type="text" id="product_name" name="product_name">
+                    </div>
 
-            <label for="product_cost">Product Cost:</label>
-            <input type="number" step="0.01" id="product_cost" name="product_cost" value="<?php echo isset($product['product_cost']) ? $product['product_cost'] : ''; ?>">
-            <br><br>
+                    <div class="form-group">
+                        <label for="product_description">Product Description:</label>
+                        <textarea id="product_description" name="product_description" rows="4"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="product_quantity">Product Quantity:</label>
+                        <input type="number" id="product_quantity" name="product_quantity" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="product_cost">Product Cost:</label>
+                        <input type="number" step="0.01" id="product_cost" name="product_cost" min="0">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn">Submit</button>
+            </form>
+
+            <?php if ($error): ?>
+                <p class="error"><?php echo htmlspecialchars($error); ?></p>
+            <?php endif; ?>
         </div>
 
-        <button type="submit">Submit</button>
-    </form>
+        <script>
+            // Show/hide update fields based on the selected action
+            document.getElementById('action').addEventListener('change', function() {
+                const updateFields = document.getElementById('update-fields');
+                if (this.value === 'update') {
+                    updateFields.style.display = 'block';
+                } else {
+                    updateFields.style.display = 'none';
+                }
+            });
+        </script>
 
-    <?php if ($error): ?>
-        <p class="error"><?php echo $error; ?></p>
-    <?php endif; ?>
+        <?php
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $product_id = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
+            $action = isset($_POST['action']) ? $_POST['action'] : '';
 
-    <script>
-        // Show/hide update fields based on the selected action
-        document.getElementById('action').addEventListener('change', function() {
-            const updateFields = document.getElementById('update-fields');
-            if (this.value === 'update') {
-                updateFields.style.display = 'block';
+            // Check if product ID exists in the database and belongs to the current user
+            $query = "SELECT * FROM product WHERE id = ? AND product_seller = ?";
+            $stmt = $con->prepare($query);
+            $stmt->bind_param("is", $product_id, $username);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows > 0) {
+                $product = $result->fetch_assoc();
+
+                if ($action == 'update') {
+                    // Update logic
+                    $product_name = $_POST['product_name'];
+                    $product_description = $_POST['product_description'];
+                    $product_quantity = (int)$_POST['product_quantity'];
+                    $product_cost = (float)$_POST['product_cost'];
+
+                    $update_query = "UPDATE product 
+                                   SET product_name = ?,
+                                       product_description = ?,
+                                       product_quantity = ?,
+                                       product_cost = ?
+                                   WHERE id = ? AND product_seller = ?";
+                    $update_stmt = $con->prepare($update_query);
+                    $update_stmt->bind_param("ssidis", 
+                        $product_name,
+                        $product_description,
+                        $product_quantity,
+                        $product_cost,
+                        $product_id,
+                        $username
+                    );
+
+                    if ($update_stmt->execute()) {
+                        echo "<p class='success'>Product updated successfully.</p>";
+                        // Refresh the page to show updated data
+                        echo "<script>window.location.href = 'manage_product.php';</script>";
+                    } else {
+                        $error = "Error updating product: " . $con->error;
+                    }
+                } elseif ($action == 'delete') {
+                    // Delete logic
+                    $delete_query = "DELETE FROM product WHERE id = ? AND product_seller = ?";
+                    $delete_stmt = $con->prepare($delete_query);
+                    $delete_stmt->bind_param("is", $product_id, $username);
+
+                    if ($delete_stmt->execute()) {
+                        echo "<p class='success'>Product deleted successfully.</p>";
+                        // Refresh the page to show updated data
+                        echo "<script>window.location.href = 'manage_product.php';</script>";
+                    } else {
+                        $error = "Error deleting product: " . $con->error;
+                    }
+                }
             } else {
-                updateFields.style.display = 'none';
+                $error = "Product not found or you don't have permission to modify it.";
             }
-        });
-    </script>
-
+        }
+        ?>
+    </div>
 </body>
-
 </html>

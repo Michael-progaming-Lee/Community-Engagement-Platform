@@ -14,7 +14,8 @@ if (!isset($_SESSION['valid'])) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style/style.css">
-    <title>Change Profile</title>
+    <link rel="stylesheet" href="style/edituserinfo.css">
+    <title>Edit Profile</title>
 </head>
 
 <body>
@@ -36,10 +37,8 @@ if (!isset($_SESSION['valid'])) {
                 $username = $_POST['username'];
                 $email = $_POST['email'];
                 $age = $_POST['age'];
-
                 $id = $_SESSION['id'];
-
-                $edit_query = mysqli_query($conn, "UPDATE users
+                $edit_query = mysqli_query($con, "UPDATE users
                 SET Username='$username', Email='$email',
                 Age='$age' WHERE Id=$id ")
                 or die("error occurred");
@@ -53,7 +52,7 @@ if (!isset($_SESSION['valid'])) {
             } else {
 
                 $id = $_SESSION['id'];
-                $query = mysqli_query($conn, "SELECT*FROM users WHERE Id=$id ");
+                $query = mysqli_query($con, "SELECT*FROM users WHERE Id=$id ");
 
                 while ($result = mysqli_fetch_assoc($query)) {
                     $res_Uname = $result['Username'];

@@ -1,144 +1,172 @@
 <?php
 session_start();
-
 include("php/config.php");
-
-// Database configuration
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "community_engagement_db";
-
-// Create connection
-$conn = mysqli_connect($servername, $username, $password, $dbname);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
 
 if (!isset($_SESSION['valid'])) {
     header("Location: index.php");
 }
 
-// Fetch products from the database
-$query = "SELECT id, product_name, product_cost, product_img FROM product";
-$resultd = $conn->query($query);
+// Get user information
+$id = $_SESSION['id'];
+$query = mysqli_query($con, "SELECT * FROM users WHERE Id=$id");
+$result = mysqli_fetch_assoc($query);
+$res_Uname = $result['Username'];
+$res_Email = $result['Email'];
+$res_Age = $result['Age'];
+$res_id = $result['Id'];
 
-if ($resultd ->num_rows > 0):
+// Get the selected category from URL parameter, default to 'all'
+$selected_category = isset($_GET['category']) ? $_GET['category'] : 'all';
+
+// Define available categories
+$categories = ['Vehicle', 'Tool', 'Appliances', 'House', 'Other'];
+
+// Prepare the query based on selected category
+if ($selected_category !== 'all' && in_array($selected_category, $categories)) {
+    $query = "SELECT * FROM product WHERE product_category = ? AND product_quantity > 0";
+    $stmt = $con->prepare($query);
+    $stmt->bind_param("s", $selected_category);
+} else {
+    $query = "SELECT * FROM product WHERE product_quantity > 0";
+    $stmt = $con->prepare($query);
+}
+
+$stmt->execute();
+$resultd = $stmt->get_result();
 ?>
-    <!DOCTYPE html>
-    <html lang="en">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="style/style.css">
-        <script src="scripts.js" defer></script>
-        <title>Home</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style/style.css">
+    <link rel="stylesheet" href="style/home.css">
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Home</title>
 
-        <style>
-            /* Styling for the product grid */
-            .product-grid {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 20px;
-            }
+    <style>
+        /* Styling for the product grid */
+        .product-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
 
-            .product-item {
-                border: 1px solid #ccc;
-                padding: 10px;
-                width: 200px;
-                text-align: center;
-            }
+        .product-item {
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: 200px;
+            text-align: center;
+        }
 
-            .product-img {
-                width: 100%;
-                align-items: center;
-                height: auto;
-            }
+        .product-img {
+            width: 100%;
+            align-items: center;
+            height: auto;
+        }
 
-            .product-name {
-                font-size: 18px;
-                margin: 10px 0;
-            }
+        .product-name {
+            font-size: 18px;
+            margin: 10px 0;
+        }
 
-            .product-cost {
-                font-size: 16px;
-                color: #333;
-            }
-        </style>
+        .product-cost {
+            font-size: 16px;
+            color: #333;
+        }
+    </style>
 
-    </head>
-
-    <body>
-        <div class="nav">
-            <div class="logo">
-                <p><a href="home.php">Logo</a> </p>
-            </div>
-
-            <div class="right-links">
-
-                <?php
-
-                $id = $_SESSION['id'];
-                $query = mysqli_query($conn, "SELECT*FROM users WHERE Id=$id");
-
-                while ($result = mysqli_fetch_assoc($query)) {
-                    $res_Uname = $result['Username'];
-                    $res_Email = $result['Email'];
-                    $res_Age = $result['Age'];
-                    $res_id = $result['Id'];
-                }
-
-                echo "<a href='edituserinfo.php?Id=$res_id'>Change Profile Information</a>";
-                ?>
-
-                <a href="php/logout.php"> <button class="btn">Log Out</button> </a>
-
-            </div>
+</head>
+<body>
+    <div class="nav">
+        <div class="logo">
+            <p><a href="home.php">Logo</a> </p>
         </div>
 
-        <main>
-            <!-- Welcome Message-->
-            <div class="main-box top">
-                <div class="top">
-                    <div class="box">
-                        <p>Hello <b><?php echo $res_Uname ?></b>, Welcome</p>
-                    </div>
-                    <div class="box">
-                        <p>Your email is <b><?php echo $res_Email ?></b>.</p>
-                    </div>
+        <div class="right-links">
+            <a href="edituserinfo.php?Id=<?php echo $res_id ?>">Change Profile Information</a>
+            <a href="php/logout.php"> <button class="btn">Log Out</button> </a>
+        </div>
+    </div>
+
+    <main>
+        <!-- Welcome Message-->
+        <div class="main-box top">
+            <div class="top">
+                <div class="box">
+                    <p>Hello <b><?php echo $res_Uname ?></b>, Welcome</p>
+                </div>
+                <div class="box">
+                    <p>Your email is <b><?php echo $res_Email ?></b>.</p>
                 </div>
             </div>
-        </main>
+        </div>
+    </main>
 
-        <a href="addproduct.php"> <button class="btn">Add New Product</button> </a>
-        <a href="users_cart.php"> <button class="btn">View Your Cart</button> </a>
+    <div class="main-content">
+        <!-- Action Buttons Section -->
+        <div class="action-buttons">
+            <a href="addproduct.php" class="action-btn add-product">
+                <i class="fas fa-plus"></i>
+                Add New Product
+            </a>
+            <a href="users_cart.php" class="action-btn view-cart">
+                <i class="fas fa-shopping-cart"></i>
+                View Your Cart
+            </a>
+        </div>
 
-        <h1>Product Store</h1>
-        <div class="product-grid">
-            <?php while ($row = $resultd ->fetch_assoc()): ?>
-                <div class="product-item">
-                    <a href="product_details.php?id=<?php echo $row['id']; ?>">
-                    <img src="<?php echo $row['product_img']; ?>" alt="<?php echo $row['product_img']; ?>" class="product-img">
-                        <div class="product-name"><?php echo $row['product_name']; ?></div>
-                        <div class="product-cost">$<?php echo number_format($row['product_cost'], 2); ?></div>
+        <div class="category-filters">
+            <h2>Categories</h2>
+            <div class="category-buttons">
+                <a href="home.php" class="category-btn <?php echo $selected_category === 'all' ? 'active' : ''; ?>">
+                    All Products
+                </a>
+                <?php foreach ($categories as $category): ?>
+                    <a href="home.php?category=<?php echo urlencode($category); ?>" 
+                       class="category-btn <?php echo $selected_category === $category ? 'active' : ''; ?>">
+                        <?php echo htmlspecialchars($category); ?>
                     </a>
-                </div>
-            <?php endwhile; ?>
+                <?php endforeach; ?>
+            </div>
         </div>
 
+        <h1><?php echo $selected_category === 'all' ? 'All Products' : htmlspecialchars($selected_category) . ' Products'; ?></h1>
 
-    </body>
-
-    </html>
+        <?php if ($resultd->num_rows > 0): ?>
+            <div class="product-grid">
+                <?php while ($row = $resultd->fetch_assoc()): ?>
+                    <div class="product-item">
+                        <a href="product_details.php?id=<?php echo $row['id']; ?>">
+                            <?php if (!empty($row['product_img']) && file_exists($row['product_img'])): ?>
+                                <img src="<?php echo htmlspecialchars($row['product_img']); ?>" 
+                                     alt="<?php echo htmlspecialchars($row['product_name']); ?>" 
+                                     class="product-img">
+                            <?php else: ?>
+                                <img src="style/default-product.png" 
+                                     alt="No image available" 
+                                     class="product-img">
+                            <?php endif; ?>
+                            <div class="product-info">
+                                <div class="product-name"><?php echo htmlspecialchars($row['product_name']); ?></div>
+                                <div class="product-category">Category: <?php echo htmlspecialchars($row['product_category']); ?></div>
+                                <div class="product-cost">$<?php echo number_format($row['product_cost'], 2); ?></div>
+                                <div class="product-quantity">Available: <?php echo $row['product_quantity']; ?></div>
+                            </div>
+                        </a>
+                    </div>
+                <?php endwhile; ?>
+            </div>
+        <?php else: ?>
+            <p class="no-products">No products available in this category.</p>
+        <?php endif; ?>
+    </div>
+</body>
+</html>
 <?php
-else:
-    echo "<p>No products found.</p>";
-endif;
-
 // Close the database connection
-$conn->close();
+$con->close();
 ?>

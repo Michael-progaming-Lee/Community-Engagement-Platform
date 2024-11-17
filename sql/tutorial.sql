@@ -41,12 +41,14 @@ CREATE TABLE product (
 );
 
 -- Create comments table with foreign key linking to product
-CREATE TABLE comments (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    product_id INT,
-    author VARCHAR(255),
-    comment TEXT,
-    FOREIGN KEY (product_id) REFERENCES product(id)
+CREATE TABLE product_comments (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    product_id INT NOT NULL,
+    user_id INT NOT NULL,
+    username VARCHAR(255) NOT NULL,
+    comment_text TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE CASCADE
 );
 
 

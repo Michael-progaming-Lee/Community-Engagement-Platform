@@ -6,6 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style/style.css">
+    <link rel="stylesheet" href="style/register.css">
     <title>Register</title>
 </head>
 
@@ -29,19 +30,17 @@
                 if (mysqli_num_rows($verify_query) != 0) {
                     echo "<div class='message'>
                     <p>This email is used, Try another One Please!</p> </div> <br>";
-                    echo "<a href='javascript:self.history.back()'><button class='btn'>Go Back</button>";
+                    echo "<a href='javascript:self.history.back()'><button class='btn'>Go Back</button></a>";
                 } else {
 
                     mysqli_query($con, "INSERT INTO users(Username,Email,Age,Password) VALUES('$username','$email','$age','$password')") or die("Error Occured");
 
                     echo "<div class='message'>
                     <p>Registration successfully!</p> </div> <br>";
-                    echo "<a href='index.php'><button class='btn'>Login Now</button>";
+                    echo "<a href='index.php'><button class='btn'>Login Now</button></a>";
                 }
             } else {
-
             ?>
-
                 <header>Sign Up</header>
                 <form action="" method="post">
                     <div class="field input">
@@ -71,8 +70,8 @@
                         Already a member? <a href="index.php">Sign In</a>
                     </div>
                 </form>
+            <?php } ?>
         </div>
-    <?php } ?>
     </div>
 </body>
 

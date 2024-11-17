@@ -156,4 +156,26 @@ main {
     border-radius: 5px;
     margin-bottom: 10px;
     color: red;
+}       flex-direction: column;
+        width: 100%;
+    }
+
+    .right-links a {
+        width: 100%;
+        text-align: center;
+    }
+
+    .action-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .container {
+        padding: 1rem;
+    }
+
+    .form-box {
+        margin: 1rem auto;
+        padding: 1.5rem;
+    }
 }
