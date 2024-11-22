@@ -18,19 +18,10 @@ if (!isset($_SESSION['valid'])) {
     <title>Edit Profile</title>
 </head>
 
-<body>
-    <div class="nav">
-        <div class="logo">
-            <p><a href="home.php"> Logo</a></p>
-        </div>
-
-        <div class="right-links">
-            <a>Change Profile Info</a>
-            <a href="php/logout.php"> <button class="btn">Log Out</button> </a>
-        </div>
-    </div>
+<body style="background-image: url('Background Images/Home_Background.png'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
+    <?php include("php/header.php"); ?>
     
-    <div class="container">
+    <div class="container" style="background: transparent; backdrop-filter: blur(3px); border-radius: 15px; padding: 20px; margin-top: 20px;">
         <div class="box form-box">
             <?php
             if (isset($_POST['submit'])) {

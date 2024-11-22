@@ -33,12 +33,11 @@ $products_result = $stmt->get_result();
     <link rel="stylesheet" href="style/manage_product.css">
     <title>Manage Your Products</title>
 </head>
-<body>
+<body style="background-image: url('Background Images/Home_Background.png'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
     <?php include("php/header.php"); ?>
+    <h1 style="color: #333; text-align: center; margin: 20px 0;">Manage Products</h1>
 
-    <div class="container">
-        <h1>Manage Products</h1>
-
+    <div class="container" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 20px;">
         <!-- Display user's current products -->
         <div class="current-products">
             <h2>Your Products</h2>

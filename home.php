@@ -43,47 +43,51 @@ $resultd = $stmt->get_result();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style/style.css">
     <link rel="stylesheet" href="style/home.css">
+    
     <!-- Add Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <title>Home</title>
-
-    <style>
-        /* Styling for the product grid */
-        .product-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
+    <script>
+        function changeBackground(category) {
+            const body = document.body;
+            switch(category) {
+                case 'Vehicle':
+                    body.style.backgroundImage = "url('Background Images/Car-Background.png')";
+                    break;
+                case 'Tool':
+                    body.style.backgroundImage = "url('Background Images/Tool-Background.png')";
+                    break;
+                case 'Appliances':
+                    body.style.backgroundImage = "url('Background Images/Appliances-Background.png')";
+                    break;
+                case 'House':
+                    body.style.backgroundImage = "url('Background Images/House-Background.png')";
+                    break;
+                case 'Other':
+                    body.style.backgroundImage = "url('Background Images/Other-Background.png')";
+                    break;
+                default:
+                    body.style.backgroundImage = "url('Background Images/Home_Background.png')";
+            }
         }
 
-        .product-item {
-            border: 1px solid #ccc;
-            padding: 10px;
-            width: 200px;
-            text-align: center;
-        }
-
-        .product-img {
-            width: 100%;
-            align-items: center;
-            height: auto;
-        }
-
-        .product-name {
-            font-size: 18px;
-            margin: 10px 0;
-        }
-
-        .product-cost {
-            font-size: 16px;
-            color: #333;
-        }
-    </style>
-
+        // Check initial category on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const category = urlParams.get('category');
+            changeBackground(category);
+        });
+    </script>
 </head>
-<body>
-    <div class="nav">
+<body style="background-image: url('Background Images/Home_Background.png'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
+    <div class="nav" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(147, 163, 178, 0.8); backdrop-filter: blur(10px);">
         <div class="logo">
-            <p><a href="home.php">Logo</a> </p>
+            <img src="Background Images/CommUnity Logo.png" alt="Company Logo" style="height: 50px; margin-left: -150px;">
+        </div>
+
+        <div style="position: absolute; text-align: left; top: 50%; transform: translateY(-50%); pointer-events: none; left: 250px;">
+            <h1 style="margin: 0; font-size: 24px; color: #333;">CommUnity Rentals</h1>
         </div>
 
         <div class="right-links">
@@ -91,6 +95,7 @@ $resultd = $stmt->get_result();
             <a href="php/logout.php"> <button class="btn">Log Out</button> </a>
         </div>
     </div>
+    <div style="height: 70px;"></div> <!-- Spacer to prevent content from going under fixed header -->
 
     <main>
         <!-- Welcome Message-->
@@ -122,19 +127,20 @@ $resultd = $stmt->get_result();
         <div class="category-filters">
             <h2>Categories</h2>
             <div class="category-buttons">
-                <a href="home.php" class="category-btn <?php echo $selected_category === 'all' ? 'active' : ''; ?>">
+                <a href="home.php" class="category-btn <?php echo $selected_category === 'all' ? 'active' : ''; ?>" onclick="changeBackground('all')">
                     All Products
                 </a>
                 <?php foreach ($categories as $category): ?>
-                    <a href="home.php?category=<?php echo urlencode($category); ?>" 
-                       class="category-btn <?php echo $selected_category === $category ? 'active' : ''; ?>">
-                        <?php echo htmlspecialchars($category); ?>
+                    <a href="home.php?category=<?php echo $category ?>" 
+                       class="category-btn <?php echo $selected_category === $category ? 'active' : ''; ?>"
+                       onclick="changeBackground('<?php echo $category ?>')">
+                        <?php echo $category ?>
                     </a>
                 <?php endforeach; ?>
             </div>
         </div>
 
-        <h1><?php echo $selected_category === 'all' ? 'All Products' : htmlspecialchars($selected_category) . ' Products'; ?></h1>
+        <h1><?php echo $selected_category === 'all' ? 'All Products' : $selected_category . ' Products'; ?></h1>
 
         <?php if ($resultd->num_rows > 0): ?>
             <div class="product-grid">

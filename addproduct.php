@@ -19,10 +19,10 @@ if (!file_exists($upload_dir)) {
     <link rel="stylesheet" href="style/addproduct.css">
     <title>Add Product</title>
 </head>
-<body>
+<body style="background-image: url('Background Images/Add-Product.jpg'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
     <?php include("php/header.php"); ?>
 
-    <div class="container">
+    <div class="container" style="background: transparent; backdrop-filter: blur(3px); border-radius: 15px; padding: 20px;">
         <!-- CRUD for Product Begin -->
         <?php
 

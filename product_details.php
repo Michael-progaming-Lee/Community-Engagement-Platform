@@ -67,13 +67,12 @@ $comments_result = $comments_stmt->get_result();
     <link rel="stylesheet" href="style/product_details.css">
     <title><?php echo htmlspecialchars($product['product_name']); ?></title>
 </head>
-<body>
+<body style="background-image: url('Background Images/Home_Background.png'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
     <?php include("php/header.php"); ?>
 
-    <div class="container">
-        <!-- Product Name Header -->
-        <h1 class="product-name"><?php echo htmlspecialchars($product['product_name']); ?></h1>
-        
+    <h1 style="color: #333; text-align: center; margin: 20px 0;"><?php echo htmlspecialchars($product['product_name']); ?></h1>
+
+    <div class="container" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 20px;">
         <!-- Product Image -->
         <div class="product-image">
             <img src="<?php echo htmlspecialchars($product['product_img']); ?>" 

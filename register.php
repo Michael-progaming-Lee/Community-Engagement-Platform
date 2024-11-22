@@ -7,10 +7,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style/style.css">
     <link rel="stylesheet" href="style/register.css">
-    <title>Register</title>
+    <title>Sign Up</title>
 </head>
 
-<body>
+<body style="background-image: url('Background Images/Background Image.png'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
+    <header style="background: transparent; padding: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <img src="Background Images/CommUnity Logo.png" alt="Company Logo" style="height: 70px;">
+            <h1 style="margin: 0; position: absolute; left: 50%; transform: translateX(-50%);">CommUnity Rentals</h1>
+        </div>
+    </header>
     <div class="container">
         <div class="box form-box">
 

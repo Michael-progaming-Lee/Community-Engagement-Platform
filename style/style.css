@@ -7,10 +7,19 @@
     font-family: 'Poppins', sans-serif;
 }
 
-body {
-    background: #e4e9f7;
+/* Common styles for header */
+header {
+    width: 100%;
+    z-index: 1000;
 }
 
+header h1 {
+    color: #333;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+/* Common container styles */
 .container {
     display: flex;
     align-items: center;
@@ -24,8 +33,12 @@ body {
     flex-direction: column;
     padding: 25px 25px;
     border-radius: 20px;
-    box-shadow: 0 0 128px 0 rgba(0, 0, 0, 0.1),
-        0 32px 64px -48px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 128px 0 rgba(0,0,0,0.1),
+                0 32px 64px -48px rgba(0,0,0,0.5);
+}
+
+body {
+    background: #e4e9f7;
 }
 
 .form-box {
@@ -156,9 +169,12 @@ main {
     border-radius: 5px;
     margin-bottom: 10px;
     color: red;
-}       flex-direction: column;
-        width: 100%;
-    }
+}     
+
+.right-links {
+    display: flex;
+    flex-direction: row;
+}
 
     .right-links a {
         width: 100%;
@@ -178,4 +194,7 @@ main {
         margin: 1rem auto;
         padding: 1.5rem;
     }
-}
+
+    .form-box form .field {
+        margin-bottom: 1rem;
+    }

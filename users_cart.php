@@ -36,11 +36,11 @@ while ($row = $cart_result->fetch_assoc()) {
     <link rel="stylesheet" href="style/users_cart.css">
     <title>Shopping Cart</title>
 </head>
-<body>
+<body style="background-image: url('Background Images/Home_Background.png'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
     <?php include("php/header.php"); ?>
-    <h1>Your Cart</h1>
+    <h1 style="color: #333; text-align: center; margin: 20px 0;">Your Cart</h1>
 
-    <div class="container">
+    <div class="container" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 20px;">
         <!-- Cart Items -->
         <div class="current-products">
             <?php if (count($cart_items) > 0): ?>
@@ -86,8 +86,8 @@ while ($row = $cart_result->fetch_assoc()) {
     </div>
 
     <!-- Return Product Section - Moved outside the main container -->
-    <div class="return-section">
-    <h2>Return Product</h2>
+    <h2 style="color: #333; text-align: center; margin: 20px 0;">Return Product</h2>
+    <div class="container" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
         <div class="container">
             
             <p>Enter the ID of the product you want to return from your cart above:</p>
