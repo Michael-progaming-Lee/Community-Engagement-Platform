@@ -71,6 +71,21 @@ body {
     outline: none;
 }
 
+.form-box form .input select {
+    height: 40px;
+    width: 100%;
+    font-size: 16px;
+    padding: 0 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    outline: none;
+    background-color: white;
+}
+
+.form-box form .input select:focus {
+    border-color: rgba(76, 68, 182, 0.808);
+}
+
 .btn {
     height: 35px;
     background: rgba(76, 68, 182, 0.808);

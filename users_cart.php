@@ -78,7 +78,7 @@ while ($row = $cart_result->fetch_assoc()) {
                     </tbody>
                 </table>
             <?php else: ?>
-                <p>Your cart is empty. <a href="index.php">Continue shopping</a></p>
+                <p>Your cart is empty. <a href="home.php">Continue shopping</a></p>
             <?php endif; ?>
         </div>
 

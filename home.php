@@ -14,6 +14,7 @@ $res_Uname = $result['Username'];
 $res_Email = $result['Email'];
 $res_Age = $result['Age'];
 $res_id = $result['Id'];
+$user_parish = $result['Parish'];
 
 // Get the selected category from URL parameter, default to 'all'
 $selected_category = isset($_GET['category']) ? $_GET['category'] : 'all';
@@ -21,14 +22,24 @@ $selected_category = isset($_GET['category']) ? $_GET['category'] : 'all';
 // Define available categories
 $categories = ['Vehicle', 'Tool', 'Appliances', 'House', 'Other'];
 
-// Prepare the query based on selected category
+// Prepare the query based on selected category and user's parish
 if ($selected_category !== 'all' && in_array($selected_category, $categories)) {
-    $query = "SELECT * FROM product WHERE product_category = ? AND product_quantity > 0";
+    $query = "SELECT p.*, u.Parish 
+              FROM product p 
+              JOIN users u ON p.product_seller = u.Username 
+              WHERE p.product_category = ? 
+              AND p.product_quantity > 0 
+              AND u.Parish = ?";
     $stmt = $con->prepare($query);
-    $stmt->bind_param("s", $selected_category);
+    $stmt->bind_param("ss", $selected_category, $user_parish);
 } else {
-    $query = "SELECT * FROM product WHERE product_quantity > 0";
+    $query = "SELECT p.*, u.Parish 
+              FROM product p 
+              JOIN users u ON p.product_seller = u.Username 
+              WHERE p.product_quantity > 0 
+              AND u.Parish = ?";
     $stmt = $con->prepare($query);
+    $stmt->bind_param("s", $user_parish);
 }
 
 $stmt->execute();
@@ -81,21 +92,21 @@ $resultd = $stmt->get_result();
     </script>
 </head>
 <body style="background-image: url('Background Images/Home_Background.png'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
-    <div class="nav" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(147, 163, 178, 0.8); backdrop-filter: blur(10px);">
-        <div class="logo">
-            <img src="Background Images/CommUnity Logo.png" alt="Company Logo" style="height: 50px; margin-left: -150px;">
+    <div class="nav" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(147, 163, 178, 0.8); backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center; padding: 0 20px;">
+        <div class="logo" style="flex: 0 0 auto;">
+            <img src="Background Images/CommUnity Logo.png" alt="Company Logo" style="height: 50px;">
         </div>
 
-        <div style="position: absolute; text-align: left; top: 50%; transform: translateY(-50%); pointer-events: none; left: 250px;">
+        <div style="flex: 0 0 auto; text-align: center;">
             <h1 style="margin: 0; font-size: 24px; color: #333;">CommUnity Rentals</h1>
         </div>
 
-        <div class="right-links">
+        <div style="flex: 0 0 auto; display: flex; gap: 20px; align-items: center;">
             <a href="edituserinfo.php?Id=<?php echo $res_id ?>">Change Profile Information</a>
             <a href="php/logout.php"> <button class="btn">Log Out</button> </a>
         </div>
     </div>
-    <div style="height: 70px;"></div> <!-- Spacer to prevent content from going under fixed header -->
+    <div style="height: 70px;"></div> 
 
     <main>
         <!-- Welcome Message-->
@@ -167,7 +178,9 @@ $resultd = $stmt->get_result();
                 <?php endwhile; ?>
             </div>
         <?php else: ?>
-            <p class="no-products">No products available in this category.</p>
+            <div class="message" style="margin-top: 20px;">
+                <p>No products available in your parish (<?php echo htmlspecialchars($user_parish); ?>) at the moment.</p>
+            </div>
         <?php endif; ?>
     </div>
 </body>

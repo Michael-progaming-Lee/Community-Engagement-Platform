@@ -27,6 +27,7 @@
                 $username = $_POST['username'];
                 $email = $_POST['email'];
                 $age = $_POST['age'];
+                $parish = $_POST['parish'];
                 $password = $_POST['password'];
 
                 //verifying the unique email
@@ -39,7 +40,7 @@
                     echo "<a href='javascript:self.history.back()'><button class='btn'>Go Back</button></a>";
                 } else {
 
-                    mysqli_query($con, "INSERT INTO users(Username,Email,Age,Password) VALUES('$username','$email','$age','$password')") or die("Error Occured");
+                    mysqli_query($con, "INSERT INTO users(Username,Email,Age,Parish,Password) VALUES('$username','$email','$age','$parish','$password')") or die("Error Occured");
 
                     echo "<div class='message'>
                     <p>Registration successfully!</p> </div> <br>";
@@ -63,6 +64,28 @@
                         <label for="age">Age</label>
                         <input type="number" name="age" id="age" autocomplete="off" required>
                     </div>
+
+                    <div class="field input">
+                        <label for="parish">Parish</label>
+                        <select name="parish" id="parish" required>
+                            <option value="">Select a parish</option>
+                            <option value="Kingston">Kingston</option>
+                            <option value="St. Andrew">St. Andrew</option>
+                            <option value="St. Catherine">St. Catherine</option>
+                            <option value="Clarendon">Clarendon</option>
+                            <option value="Manchester">Manchester</option>
+                            <option value="St. Elizabeth">St. Elizabeth</option>
+                            <option value="Westmoreland">Westmoreland</option>
+                            <option value="Hanover">Hanover</option>
+                            <option value="St. James">St. James</option>
+                            <option value="Trelawny">Trelawny</option>
+                            <option value="St. Ann">St. Ann</option>
+                            <option value="St. Mary">St. Mary</option>
+                            <option value="Portland">Portland</option>
+                            <option value="St. Thomas">St. Thomas</option>
+                        </select>
+                    </div>
+
                     <div class="field input">
                         <label for="password">Password</label>
                         <input type="password" name="password" id="password" autocomplete="off" required>
