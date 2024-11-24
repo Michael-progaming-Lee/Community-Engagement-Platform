@@ -24,20 +24,20 @@ $categories = ['Vehicle', 'Tool', 'Appliances', 'House', 'Other'];
 
 // Prepare the query based on selected category and user's parish
 if ($selected_category !== 'all' && in_array($selected_category, $categories)) {
-    $query = "SELECT p.*, u.Parish 
-              FROM product p 
-              JOIN users u ON p.product_seller = u.Username 
-              WHERE p.product_category = ? 
-              AND p.product_quantity > 0 
-              AND u.Parish = ?";
+    $query = "SELECT p.*, u.Parish
+            FROM product p
+            JOIN users u ON p.product_seller = u.Username
+            WHERE p.product_category = ?
+            AND p.product_quantity > 0
+            AND u.Parish = ?";
     $stmt = $con->prepare($query);
     $stmt->bind_param("ss", $selected_category, $user_parish);
 } else {
-    $query = "SELECT p.*, u.Parish 
-              FROM product p 
-              JOIN users u ON p.product_seller = u.Username 
-              WHERE p.product_quantity > 0 
-              AND u.Parish = ?";
+    $query = "SELECT p.*, u.Parish
+            FROM product p
+            JOIN users u ON p.product_seller = u.Username
+            WHERE p.product_quantity > 0
+            AND u.Parish = ?";
     $stmt = $con->prepare($query);
     $stmt->bind_param("s", $user_parish);
 }
@@ -48,21 +48,22 @@ $resultd = $stmt->get_result();
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style/style.css">
     <link rel="stylesheet" href="style/home.css">
-    
+
     <!-- Add Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+
     <title>Home</title>
     <script>
         function changeBackground(category) {
             const body = document.body;
-            switch(category) {
+            switch (category) {
                 case 'Vehicle':
                     body.style.backgroundImage = "url('Background Images/Car-Background.png')";
                     break;
@@ -76,7 +77,7 @@ $resultd = $stmt->get_result();
                     body.style.backgroundImage = "url('Background Images/House-Background.png')";
                     break;
                 case 'Other':
-                    body.style.backgroundImage = "url('Background Images/Other-Background.png')";
+                    body.style.backgroundImage = "url('Background Images/Other-Background.jpg')";
                     break;
                 default:
                     body.style.backgroundImage = "url('Background Images/Home_Background.png')";
@@ -91,6 +92,7 @@ $resultd = $stmt->get_result();
         });
     </script>
 </head>
+
 <body style="background-image: url('Background Images/Home_Background.png'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
     <div class="nav" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(147, 163, 178, 0.8); backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center; padding: 0 20px;">
         <div class="logo" style="flex: 0 0 auto;">
@@ -106,7 +108,7 @@ $resultd = $stmt->get_result();
             <a href="php/logout.php"> <button class="btn">Log Out</button> </a>
         </div>
     </div>
-    <div style="height: 70px;"></div> 
+    <div style="height: 70px;"></div>
 
     <main>
         <!-- Welcome Message-->
@@ -117,6 +119,9 @@ $resultd = $stmt->get_result();
                 </div>
                 <div class="box">
                     <p>Your email is <b><?php echo $res_Email ?></b>.</p>
+                </div>
+                <div class="box">
+                    <p>The store region you are using is <b><?php echo $user_parish ?></b>.</p>
                 </div>
             </div>
         </div>
@@ -142,9 +147,9 @@ $resultd = $stmt->get_result();
                     All Products
                 </a>
                 <?php foreach ($categories as $category): ?>
-                    <a href="home.php?category=<?php echo $category ?>" 
-                       class="category-btn <?php echo $selected_category === $category ? 'active' : ''; ?>"
-                       onclick="changeBackground('<?php echo $category ?>')">
+                    <a href="home.php?category=<?php echo $category ?>"
+                        class="category-btn <?php echo $selected_category === $category ? 'active' : ''; ?>"
+                        onclick="changeBackground('<?php echo $category ?>')">
                         <?php echo $category ?>
                     </a>
                 <?php endforeach; ?>
@@ -159,13 +164,13 @@ $resultd = $stmt->get_result();
                     <div class="product-item">
                         <a href="product_details.php?id=<?php echo $row['id']; ?>">
                             <?php if (!empty($row['product_img']) && file_exists($row['product_img'])): ?>
-                                <img src="<?php echo htmlspecialchars($row['product_img']); ?>" 
-                                     alt="<?php echo htmlspecialchars($row['product_name']); ?>" 
-                                     class="product-img">
+                                <img src="<?php echo htmlspecialchars($row['product_img']); ?>"
+                                    alt="<?php echo htmlspecialchars($row['product_name']); ?>"
+                                    class="product-img">
                             <?php else: ?>
-                                <img src="style/default-product.png" 
-                                     alt="No image available" 
-                                     class="product-img">
+                                <img src="style/default-product.png"
+                                    alt="No image available"
+                                    class="product-img">
                             <?php endif; ?>
                             <div class="product-info">
                                 <div class="product-name"><?php echo htmlspecialchars($row['product_name']); ?></div>
@@ -184,6 +189,7 @@ $resultd = $stmt->get_result();
         <?php endif; ?>
     </div>
 </body>
+
 </html>
 <?php
 // Close the database connection

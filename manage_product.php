@@ -102,21 +102,36 @@ $products_result = $stmt->get_result();
                 <!-- Update Fields -->
                 <div id="update-fields" style="display: none;">
                     <div class="form-group">
+                        <label>Select fields to update:</label><br>
+                        <input type="checkbox" id="update_name" name="update_fields[]" value="name">
+                        <label for="update_name">Name</label><br>
+                        
+                        <input type="checkbox" id="update_description" name="update_fields[]" value="description">
+                        <label for="update_description">Description</label><br>
+                        
+                        <input type="checkbox" id="update_quantity" name="update_fields[]" value="quantity">
+                        <label for="update_quantity">Quantity</label><br>
+                        
+                        <input type="checkbox" id="update_cost" name="update_fields[]" value="cost">
+                        <label for="update_cost">Cost</label>
+                    </div>
+
+                    <div class="form-group name-field" style="display: none;">
                         <label for="product_name">Product Name:</label>
                         <input type="text" id="product_name" name="product_name">
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group description-field" style="display: none;">
                         <label for="product_description">Product Description:</label>
                         <textarea id="product_description" name="product_description" rows="4"></textarea>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group quantity-field" style="display: none;">
                         <label for="product_quantity">Product Quantity:</label>
                         <input type="number" id="product_quantity" name="product_quantity" min="0">
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group cost-field" style="display: none;">
                         <label for="product_cost">Product Cost:</label>
                         <input type="number" step="0.01" id="product_cost" name="product_cost" min="0">
                     </div>
@@ -140,6 +155,22 @@ $products_result = $stmt->get_result();
                     updateFields.style.display = 'none';
                 }
             });
+
+            // Show/hide individual fields based on checkbox selection
+            document.querySelectorAll('input[name="update_fields[]"]').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const fieldClass = this.value + '-field';
+                    const field = document.querySelector('.' + fieldClass);
+                    if (field) {
+                        field.style.display = this.checked ? 'block' : 'none';
+                        // Clear the field when unchecked
+                        if (!this.checked) {
+                            const input = field.querySelector('input, textarea');
+                            if (input) input.value = '';
+                        }
+                    }
+                });
+            });
         </script>
 
         <?php
@@ -159,33 +190,60 @@ $products_result = $stmt->get_result();
 
                 if ($action == 'update') {
                     // Update logic
-                    $product_name = $_POST['product_name'];
-                    $product_description = $_POST['product_description'];
-                    $product_quantity = (int)$_POST['product_quantity'];
-                    $product_cost = (float)$_POST['product_cost'];
+                    $updates = array();
+                    $types = "";
+                    $params = array();
 
-                    $update_query = "UPDATE product 
-                                   SET product_name = ?,
-                                       product_description = ?,
-                                       product_quantity = ?,
-                                       product_cost = ?
-                                   WHERE id = ? AND product_seller = ?";
-                    $update_stmt = $con->prepare($update_query);
-                    $update_stmt->bind_param("ssidis", 
-                        $product_name,
-                        $product_description,
-                        $product_quantity,
-                        $product_cost,
-                        $product_id,
-                        $username
-                    );
+                    // Check which fields were selected for update
+                    $update_fields = isset($_POST['update_fields']) ? $_POST['update_fields'] : array();
 
-                    if ($update_stmt->execute()) {
-                        echo "<p class='success'>Product updated successfully.</p>";
-                        // Refresh the page to show updated data
-                        echo "<script>window.location.href = 'manage_product.php';</script>";
+                    if (in_array('name', $update_fields) && isset($_POST['product_name'])) {
+                        $updates[] = "product_name = ?";
+                        $types .= "s";
+                        $params[] = $_POST['product_name'];
+                    }
+                    if (in_array('description', $update_fields) && isset($_POST['product_description'])) {
+                        $updates[] = "product_description = ?";
+                        $types .= "s";
+                        $params[] = $_POST['product_description'];
+                    }
+                    if (in_array('quantity', $update_fields) && isset($_POST['product_quantity'])) {
+                        $updates[] = "product_quantity = ?";
+                        $types .= "i";
+                        $params[] = (int)$_POST['product_quantity'];
+                    }
+                    if (in_array('cost', $update_fields) && isset($_POST['product_cost'])) {
+                        $updates[] = "product_cost = ?";
+                        $types .= "d";
+                        $params[] = (float)$_POST['product_cost'];
+                    }
+
+                    if (!empty($updates)) {
+                        // Add the product_id and username parameters
+                        $types .= "is";
+                        $params[] = $product_id;
+                        $params[] = $username;
+
+                        $update_query = "UPDATE product SET " . implode(", ", $updates) . 
+                                      " WHERE id = ? AND product_seller = ?";
+                        $update_stmt = $con->prepare($update_query);
+
+                        // Create the parameter array for bind_param
+                        $bind_params = array($types);
+                        foreach ($params as $key => $value) {
+                            $bind_params[] = &$params[$key];
+                        }
+                        call_user_func_array(array($update_stmt, 'bind_param'), $bind_params);
+
+                        if ($update_stmt->execute()) {
+                            echo "<p class='success'>Product updated successfully.</p>";
+                            // Refresh the page to show updated data
+                            echo "<script>window.location.href = 'manage_product.php';</script>";
+                        } else {
+                            $error = "Error updating product: " . $con->error;
+                        }
                     } else {
-                        $error = "Error updating product: " . $con->error;
+                        $error = "Please select at least one field to update.";
                     }
                 } elseif ($action == 'delete') {
                     // Delete logic
