@@ -28,8 +28,8 @@ CREATE TABLE users_cart(
     product_cost Numeric,
     product_img TEXT,
     product_total Numeric,
-    FOREIGN KEY (UserID) REFERENCES users(id),
-    FOREIGN KEY (product_id) REFERENCES product(id)
+    FOREIGN KEY (UserID) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE CASCADE
 );
 
 -- Create Product table with foreign key linking to user
