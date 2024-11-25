@@ -37,7 +37,7 @@ $products_result = $stmt->get_result();
     <?php include("php/header.php"); ?>
     <h1 style="color: #333; text-align: center; margin: 20px 0;">Manage Products</h1>
 
-    <div class="container" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 20px;">
+    <div class="container" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-left: 100px;  margin-right: 100px; margin-bottom: 20px;">
         <!-- Display user's current products -->
         <div class="current-products">
             <h2>Your Products</h2>
@@ -79,7 +79,11 @@ $products_result = $stmt->get_result();
 
         <hr class="section-divider">
 
-        <!-- Update or Delete Product Form -->
+        
+    </div>
+
+    <div class="container" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  margin-left: 100px;  margin-right: 100px; margin-bottom: 20px;">
+                <!-- Update or Delete Product Form -->
         <div class="manage-form">
             <h2>Update or Delete Product</h2>
             <p>Enter the ID of the product you want to modify from your products list above:</p>

@@ -40,7 +40,7 @@ while ($row = $cart_result->fetch_assoc()) {
     <?php include("php/header.php"); ?>
     <h1 style="color: #333; text-align: center; margin: 20px 0;">Your Cart</h1>
 
-    <div class="container" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 20px;">
+    <div class="container" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-left: 150px;  margin-right: 150px; margin-bottom: 20px;">
         <!-- Cart Items -->
         <div class="current-products">
             <?php if (count($cart_items) > 0): ?>
@@ -87,19 +87,19 @@ while ($row = $cart_result->fetch_assoc()) {
 
     <!-- Return Product Section - Moved outside the main container -->
     <h2 style="color: #333; text-align: center; margin: 20px 0;">Return Product</h2>
-    <div class="container" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-        <div class="container">
+    <div class="container" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-left: 150px;  margin-right: 150px; margin-bottom: 20px;">
+        <div class="container-b">
             
             <p>Enter the ID of the product you want to return from your cart above:</p>
-            
-            <form method="post" class="return-form">
+        
+            <form method="post" class="return-form" style="display: flex; flex-direction: column; align-items: center;">
                 <div class="form-group">
-                    <label for="product_id">Product ID:</label>
+                    <label for="product_id" style="width: 240px; display: Inline-block;">Product ID:</label>
                     <input type="number" id="product_id" name="product_id" required>
                 </div>
                 
                 <div class="form-group">
-                    <label for="return_quantity">Quantity to Return:</label>
+                    <label for="return_quantity" style="width: 240px; display: Inline-block;">Quantity to Return:</label>
                     <input type="number" id="return_quantity" name="return_quantity" required>
                 </div>
                 

@@ -29,9 +29,10 @@ if (!isset($_SESSION['valid'])) {
                 $email = $_POST['email'];
                 $age = $_POST['age'];
                 $id = $_SESSION['id'];
+                $parish = $_POST['parish'];
                 $edit_query = mysqli_query($con, "UPDATE users
                 SET Username='$username', Email='$email',
-                Age='$age' WHERE Id=$id ")
+                Age='$age', Parish='$parish' WHERE Id=$id ")
                 or die("error occurred");
 
                 if ($edit_query) {
@@ -49,6 +50,7 @@ if (!isset($_SESSION['valid'])) {
                     $res_Uname = $result['Username'];
                     $res_Email = $result['Email'];
                     $res_Age = $result['Age'];
+                    $res_Parish = $result['Parish'];
                 }
 
             ?>
@@ -69,8 +71,29 @@ if (!isset($_SESSION['valid'])) {
                         <input type="number" name="age" id="age" value="<?php echo $res_Age; ?>" autocomplete="off" required>
                     </div>
 
-                    <div class="field">
+                    <div class="field input">
+                        <label for="parish">Username</label>
+                        <select name="parish" name="parish" id="parish" required>
+                            <option value="<?php echo $res_Parish; ?>" autocomplete="off" required> <?php echo $res_Parish; ?> </option>
+                            <option value="">Select a parish</option>
+                            <option value="Kingston">Kingston</option>
+                            <option value="St. Andrew">St. Andrew</option>
+                            <option value="St. Catherine">St. Catherine</option>
+                            <option value="Clarendon">Clarendon</option>
+                            <option value="Manchester">Manchester</option>
+                            <option value="St. Elizabeth">St. Elizabeth</option>
+                            <option value="Westmoreland">Westmoreland</option>
+                            <option value="Hanover">Hanover</option>
+                            <option value="St. James">St. James</option>
+                            <option value="Trelawny">Trelawny</option>
+                            <option value="St. Ann">St. Ann</option>
+                            <option value="St. Mary">St. Mary</option>
+                            <option value="Portland">Portland</option>
+                            <option value="St. Thomas">St. Thomas</option>
+                        </select>
+                    </div>
 
+                    <div class="field"> 
                         <input type="submit" class="btn" name="submit" value="Update" required>
                     </div>
 

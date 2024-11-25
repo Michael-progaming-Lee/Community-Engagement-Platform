@@ -114,15 +114,19 @@ $resultd = $stmt->get_result();
         <!-- Welcome Message-->
         <div class="main-box top">
             <div class="top">
+                
                 <div class="box">
                     <p>Hello <b><?php echo $res_Uname ?></b>, Welcome</p>
                 </div>
+
                 <div class="box">
                     <p>Your email is <b><?php echo $res_Email ?></b>.</p>
                 </div>
+
                 <div class="box">
-                    <p>The store region you are using is <b><?php echo $user_parish ?></b>.</p>
+                    <p>Store Region: <b><?php echo $user_parish ?></b>.</p>
                 </div>
+
             </div>
         </div>
     </main>

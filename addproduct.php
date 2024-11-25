@@ -82,9 +82,8 @@ if (!file_exists($upload_dir)) {
                 VALUES('$product_seller','$product_name','$product_category','$product_description','$product_quantity','$product_cost','$product_img')") or die("Error Occurred");
 
                 echo "<div class='message success'>
-                <p>Product has been added Successfully!</p></div><br>";
-                echo "<a href='home.php'><button class='btn'>Home Page</button></a> 
-                      <a href='addproduct.php'><button class='btn'>Add Another Product</button></a>";
+                <p>Product has been added Successfully!</p><br>";
+                echo "<a href='addproduct.php'><button class='btn'>Add Another Product</button></a></div>";
             }
         } else {
         ?>
@@ -94,11 +93,11 @@ if (!file_exists($upload_dir)) {
                 <p>Your name: <b><?php echo $res_Uname ?></b></p>
 
                 <div class="product input">
-                    <label for="product_name">Product Name</label>
+                    <label for="product_name" style="width: 150px; display: Inline-block;">Product Name</label>
                     <input type="text" name="product_name" id="product_name" autocomplete="off" required>
                 </div>
 
-                <label for="product_category">Select Category:</label>
+                <label for="product_category" style="width: 150px; display: Inline-block;">Select Category</label>
                 <select id="product_category" name="product_category" required>
                     <option value="">--Choose Category--</option>
                     <option value="Vehicle">Vehicle</option>
@@ -110,22 +109,22 @@ if (!file_exists($upload_dir)) {
                 <br><br>
 
                 <div class="product input">
-                    <label for="product_description">Product Description</label>
+                    <label for="product_description" style="width: 150px; display: Inline-block;">Product Description</label>
                     <textarea name="product_description" id="product_description" rows="4" required></textarea>
                 </div>
 
                 <div class="product input">
-                    <label for="product_quantity">Product Quantity</label>
+                    <label for="product_quantity" style="width: 150px; display: Inline-block;">Product Quantity</label>
                     <input type="number" name="product_quantity" id="product_quantity" min="1" autocomplete="off" required>
                 </div>
 
                 <div class="product input">
-                    <label for="product_cost">Product Cost</label>
+                    <label for="product_cost" style="width: 150px; display: Inline-block;">Product Cost</label>
                     <input type="number" name="product_cost" id="product_cost" min="0" step="0.01" autocomplete="off" required>
                 </div>
 
                 <div class="product input">
-                    <label for="product_img">Product Image</label>
+                    <label for="product_img" style="width: 150px; display: Inline-block;">Product Image</label>
                     <input type="file" name="product_img" id="product_img" accept=".jpg, .jpeg, .png" required>
                     <small>Accepted formats: JPG, JPEG, PNG</small>
                 </div>

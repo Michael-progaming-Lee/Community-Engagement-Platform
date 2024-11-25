@@ -63,12 +63,11 @@ $comments_result = $comments_stmt->get_result();
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style/style.css">
     <link rel="stylesheet" href="style/product_details.css">
     <title><?php echo htmlspecialchars($product['product_name']); ?></title>
 </head>
 <body style="background-image: url('Background Images/Home_Background.png'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
-    <?php include("php/header.php"); ?>
+<?php include("php/header.php"); ?>
 
     <h1 style="color: #333; text-align: center; margin: 20px 0;"><?php echo htmlspecialchars($product['product_name']); ?></h1>
 
@@ -81,35 +80,50 @@ $comments_result = $comments_stmt->get_result();
         
         <!-- Product Information -->
         <div class="product-info">
-            <div class="info-item">
+            <span class="info-item">
                 <span class="label">Product ID:</span>
                 <span class="value"><?php echo htmlspecialchars($product['id']); ?></span>
-            </div>
+            </span>
             
-            <div class="info-item">
+            <br>    </br>
+            <br>    </br>
+            
+            <span class="info-item">
                 <span class="label">Category:</span>
                 <span class="value"><?php echo htmlspecialchars($product['product_category']); ?></span>
-            </div>
+            </span>
             
-            <div class="info-item">
+            <br>    </br>
+            <br>    </br>
+            
+            <span class="info-item">
                 <span class="label">Description:</span>
                 <span class="value"><?php echo htmlspecialchars($product['product_description']); ?></span>
-            </div>
+            </span>
             
-            <div class="info-item">
+            <br>    </br>
+            <br>    </br>
+            
+            <span class="info-item">
                 <span class="label">Available Quantity:</span>
                 <span class="value"><?php echo htmlspecialchars($product['product_quantity']); ?></span>
-            </div>
+            </span>
             
-            <div class="info-item">
+            <br>    </br>
+            <br>    </br>
+
+            <span class="info-item">
                 <span class="label">Cost:</span>
                 <span class="value price">$<?php echo number_format($product['product_cost'], 2); ?></span>
-            </div>
+            </span>
 
-            <div class="info-item">
+            <br>    </br>
+            <br>    </br>
+
+            <span class="info-item">
                 <span class="label">Seller:</span>
                 <span class="value"><?php echo htmlspecialchars($product['product_seller']); ?></span>
-            </div>
+</span>
         </div>
 
         <?php if ($is_owner): ?>
