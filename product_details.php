@@ -56,7 +56,6 @@ $comments_stmt->bind_param("i", $product_id);
 $comments_stmt->execute();
 $comments_result = $comments_stmt->get_result();
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -68,7 +67,6 @@ $comments_result = $comments_stmt->get_result();
 </head>
 <body style="background-image: url('Background Images/Home_Background.png'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
 <?php include("php/header.php"); ?>
-
     <h1 style="color: #333; text-align: center; margin: 20px 0;"><?php echo htmlspecialchars($product['product_name']); ?></h1>
 
     <div class="container" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 20px;">
@@ -140,7 +138,10 @@ $comments_result = $comments_stmt->get_result();
                         <input type="number" id="rent_quantity" name="rent_quantity" 
                                min="1" max="<?php echo $product['product_quantity']; ?>" required>
                     </div>
-                    <button type="submit" class="btn rent-btn">Rent Now</button>
+                    <div class="button-group" style="display: flex; gap: 10px;">
+                        <button type="submit" class="btn rent-btn">Rent Now</button>
+                        <a href="negotiate-price.php?product_id=<?php echo $product_id; ?>" class="btn negotiate-btn" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Negotiate Price</a>
+                    </div>
                 </form>
             </div>
 
@@ -151,7 +152,7 @@ $comments_result = $comments_stmt->get_result();
                     echo "<p class='error'>Cannot rent more than available stock.</p>";
                 } else {
                     // Calculate total
-                    $product_total = $rent_quantity * $product['product_cost'];
+                    $product_total = $rent_quantity * $product['product_cost'];;
 
                     // Insert into users_cart
                     $insert_query = "INSERT INTO users_cart (Username, UserID, product_id, product_name, product_category, product_description, product_quantity, product_cost, product_img, product_total)

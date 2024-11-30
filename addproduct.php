@@ -40,6 +40,7 @@ if (!file_exists($upload_dir)) {
         include("php/config.php");
         if (isset($_POST['submit'])) {
             $product_seller = $res_Uname;
+            $product_seller_id = $res_id;
             $product_name = $_POST['product_name'];
             $product_category = $_POST['product_category'];
             $product_description = $_POST['product_description'];
@@ -78,8 +79,8 @@ if (!file_exists($upload_dir)) {
             }
 
             if ($upload_status) {
-                mysqli_query($con, "INSERT INTO product(product_seller,product_name,product_category,product_description,product_quantity,product_cost,product_img)
-                VALUES('$product_seller','$product_name','$product_category','$product_description','$product_quantity','$product_cost','$product_img')") or die("Error Occurred");
+                mysqli_query($con, "INSERT INTO product(product_seller,product_seller_id,product_name,product_category,product_description,product_quantity,product_cost,product_img)
+                VALUES('$product_seller','$product_seller_id','$product_name','$product_category','$product_description','$product_quantity','$product_cost','$product_img')") or die("Error Occurred");
 
                 echo "<div class='message success'>
                 <p>Product has been added Successfully!</p><br>";
@@ -91,6 +92,7 @@ if (!file_exists($upload_dir)) {
 
             <form action="" method="post" enctype="multipart/form-data">
                 <p>Your name: <b><?php echo $res_Uname ?></b></p>
+                <p>Your ID#: <b><?php echo $res_id ?></b></p>
 
                 <div class="product input">
                     <label for="product_name" style="width: 150px; display: Inline-block;">Product Name</label>

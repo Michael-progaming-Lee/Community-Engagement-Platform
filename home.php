@@ -142,6 +142,10 @@ $resultd = $stmt->get_result();
                 <i class="fas fa-shopping-cart"></i>
                 View Your Cart
             </a>
+            <a href="my-negotiations.php" class="action-btn" style="background-color: #4CAF50;">
+                <i class="fas fa-handshake"></i>
+                Price Negotiations
+            </a>
         </div>
 
         <div class="category-filters">

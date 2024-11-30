@@ -16,7 +16,6 @@ CREATE TABLE users(
 CREATE TABLE users_cart(
     Id int PRIMARY KEY AUTO_INCREMENT,
     --User Details
-    Username varchar(200),
     UserID INT,
 
     --Product Details
@@ -35,13 +34,14 @@ CREATE TABLE users_cart(
 -- Create Product table with foreign key linking to user
 CREATE TABLE product (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    product_seller VARCHAR(200) NOT NULL,
+    product_seller_id INT NOT NULL,
     product_name VARCHAR(255) NOT NULL,
     product_category VARCHAR(255) NOT NULL,
     product_description TEXT NOT NULL,
     product_quantity INT,
     product_cost Numeric,
-    product_img TEXT
+    product_img TEXT,
+    FOREIGN KEY (product_seller_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Create comments table with foreign key linking to product
@@ -52,5 +52,22 @@ CREATE TABLE IF NOT EXISTS product_comments (
     username VARCHAR(255) NOT NULL,
     comment_text TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE CASCADE
+    FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE price_Negotiation (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT NOT NULL,
+    user_id INT NOT NULL,
+    seller_id INT NOT NULL,
+    original_price DECIMAL(10, 2) NOT NULL,
+    proposed_price DECIMAL(10, 2) NOT NULL,
+    seller_response ENUM('pending', 'accepted', 'rejected') DEFAULT 'pending',
+    final_price DECIMAL(10, 2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES product(id),
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (seller_id) REFERENCES users(id)
 );
