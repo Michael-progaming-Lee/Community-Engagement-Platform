@@ -72,7 +72,7 @@ if (!isset($_SESSION['valid'])) {
                     </div>
 
                     <div class="field input">
-                        <label for="parish">Username</label>
+                        <label for="parish">Parish</label>
                         <select name="parish" name="parish" id="parish" required>
                             <option value="<?php echo $res_Parish; ?>" autocomplete="off" required> <?php echo $res_Parish; ?> </option>
                             <option value="">Select a parish</option>

@@ -79,12 +79,38 @@ if (!file_exists($upload_dir)) {
             }
 
             if ($upload_status) {
-                mysqli_query($con, "INSERT INTO product(product_seller,product_seller_id,product_name,product_category,product_description,product_quantity,product_cost,product_img)
-                VALUES('$product_seller','$product_seller_id','$product_name','$product_category','$product_description','$product_quantity','$product_cost','$product_img')") or die("Error Occurred");
-
-                echo "<div class='message success'>
-                <p>Product has been added Successfully!</p><br>";
-                echo "<a href='addproduct.php'><button class='btn'>Add Another Product</button></a></div>";
+                // Prepare the statement
+                $stmt = mysqli_prepare($con, "INSERT INTO product (product_seller, product_seller_id, product_name, product_category, product_description, product_quantity, product_cost, product_img) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                
+                if ($stmt) {
+                    // Bind parameters with appropriate types
+                    mysqli_stmt_bind_param($stmt, "ssssssss", 
+                        $product_seller,
+                        $product_seller_id,
+                        $product_name,
+                        $product_category,
+                        $product_description,
+                        $product_quantity,
+                        $product_cost,
+                        $product_img
+                    );
+                    
+                    // Execute the statement
+                    if (mysqli_stmt_execute($stmt)) {
+                        echo "<div class='message success'>
+                        <p>Product has been added Successfully!</p><br>";
+                        echo "<a href='addproduct.php'><button class='btn'>Add Another Product</button></a></div>";
+                    } else {
+                        echo "<div class='message error'>
+                        <p>Error occurred: " . mysqli_stmt_error($stmt) . "</p></div>";
+                    }
+                    
+                    // Close the statement
+                    mysqli_stmt_close($stmt);
+                } else {
+                    echo "<div class='message error'>
+                    <p>Error in preparing statement: " . mysqli_error($con) . "</p></div>";
+                }
             }
         } else {
         ?>

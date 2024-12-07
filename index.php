@@ -16,7 +16,7 @@ session_start();
     <header style="background: transparent; padding: 10px;">
         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
             <img src="Background Images/CommUnity Logo.png" alt="Company Logo" style="height: 70px;">
-            <h1 style="margin: 0; position: absolute; left: 50%; transform: translateX(-50%);">CommUnity Rentals</h1>
+            <h1 style="margin: 0; position: absolute; left: 50%; transform: translateX(-50%); color: #6699CCFFFF; background: rgba(147, 163, 178, 0.8)">CommUnity Rentals</h1>
         </div>
     </header>
     <div class="container">

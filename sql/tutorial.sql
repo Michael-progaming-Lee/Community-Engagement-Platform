@@ -3,7 +3,7 @@ DROP DATABASE IF EXISTS community_engagement_db;
 CREATE DATABASE community_engagement_db;
 USE community_engagement_db;
 
--- Create user table
+-- Create users table
 CREATE TABLE users(
     Id int PRIMARY KEY AUTO_INCREMENT,
     Username varchar(200),
@@ -13,6 +13,7 @@ CREATE TABLE users(
     Password varchar(200)
 );
 
+-- Create users cart table
 CREATE TABLE users_cart(
     Id int PRIMARY KEY AUTO_INCREMENT,
     --User Details
@@ -44,7 +45,7 @@ CREATE TABLE product (
     FOREIGN KEY (product_seller_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Create comments table with foreign key linking to product
+-- Create comments table with foreign key linking to products and users
 CREATE TABLE IF NOT EXISTS product_comments (
     id INT PRIMARY KEY AUTO_INCREMENT,
     product_id INT NOT NULL,
@@ -56,6 +57,7 @@ CREATE TABLE IF NOT EXISTS product_comments (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- Create price negotiation table with foreign key linking to products and users
 CREATE TABLE price_Negotiation (
     id INT AUTO_INCREMENT PRIMARY KEY,
     product_id INT NOT NULL,

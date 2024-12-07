@@ -45,7 +45,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['propose_price'])) {
         if (!$stmt->execute()) {
             echo "<script>alert('Error: " . $stmt->error . "');</script>";
         } else {
-            echo "<script>alert('Price proposal submitted successfully!'); window.location.reload();</script>";
+            echo '
+            <div id="successOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000;">
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fdfdfd; padding: 25px; border-radius: 20px; box-shadow: 0 0 128px 0 rgba(0,0,0,0.1), 0 32px 64px -48px rgba(0,0,0,0.5); text-align: center; font-family: \'Poppins\', sans-serif;">
+                    <h2 style="color: #6699CC; margin-bottom: 20px;">Success!</h2>
+                    <p style="margin-bottom: 20px;">Price proposal submitted successfully!</p>
+                    <button onclick="closeSuccessMessage()" style="background: #6699CC; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-family: \'Poppins\', sans-serif;">Okay</button>
+                </div>
+            </div>
+            <script>
+                document.getElementById("successOverlay").style.display = "block";
+                function closeSuccessMessage() {
+                    window.location.href = "product_details.php?id=' . $product_id . '";
+                }
+            </script>';
         }
     }
 }
@@ -105,14 +118,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['negotiation_response'
                                   AND seller_response = 'pending'";
             $stmt = $con->prepare($reject_others_query);
             $stmt->bind_param("ii", $product_id, $negotiation_id);
-            if (!$stmt->execute()) {
-                throw new Exception("Failed to update other negotiations");
-            }
+            $stmt->execute();
         }
         
         $con->commit();
-        echo "<script>alert('" . ($response === 'accepted' ? 'Price negotiation accepted.' : 'Negotiation rejected.') . "'); window.location.reload();</script>";
-        exit();
+        
+        // Show success message
+        echo '
+        <div id="successOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000;">
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fdfdfd; padding: 25px; border-radius: 20px; box-shadow: 0 0 128px 0 rgba(0,0,0,0.1), 0 32px 64px -48px rgba(0,0,0,0.5); text-align: center; font-family: \'Poppins\', sans-serif;">
+                <h2 style="color: #6699CC; margin-bottom: 20px;">Success!</h2>
+                <p style="margin-bottom: 20px;">Price proposal has been ' . ($response === 'accepted' ? 'approved' : 'rejected') . '!</p>
+                <button onclick="closeResponseMessage()" style="background: #6699CC; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-family: \'Poppins\', sans-serif;">Okay</button>
+            </div>
+        </div>
+        <script>
+            document.getElementById("successOverlay").style.display = "block";
+            function closeResponseMessage() {
+                window.location.href = "my-negotiations.php";
+            }
+        </script>';
         
     } catch (Exception $e) {
         $con->rollback();
