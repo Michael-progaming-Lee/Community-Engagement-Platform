@@ -22,7 +22,11 @@ if (!file_exists($upload_dir)) {
 <body style="background-image: url('Background Images/Add-Product.jpg'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
     <?php include("php/header.php"); ?>
 
-    <div class="container" style="background: transparent; backdrop-filter: blur(3px); border-radius: 15px; padding: 20px;">
+    <div style="text-align: center; margin: 20px 0;">
+        <h1 style="color: #333; text-shadow: 1px 1px 2px rgba(255,255,255,0.8);">Add New Product</h1>
+    </div>
+
+    <div class="container" style="background: rgba(255, 255, 255, 0.8); border-radius: 15px; padding: 20px; max-width: 800px; margin: 0 auto;">
         <!-- CRUD for Product Begin -->
         <?php
 
@@ -30,7 +34,6 @@ if (!file_exists($upload_dir)) {
         $query = mysqli_query($con, "SELECT*FROM users WHERE Id=$id");
 
         while ($result = mysqli_fetch_assoc($query)) {
-            //user logins
             $res_Uname = $result['Username'];
             $res_Email = $result['Email'];
             $res_Age = $result['Age'];
@@ -46,6 +49,7 @@ if (!file_exists($upload_dir)) {
             $product_description = $_POST['product_description'];
             $product_quantity = $_POST['product_quantity'];
             $product_cost = $_POST['product_cost'];
+            $listing_type = $_POST['listing_type'];
 
             // Handle file upload
             $upload_status = true;
@@ -80,11 +84,11 @@ if (!file_exists($upload_dir)) {
 
             if ($upload_status) {
                 // Prepare the statement
-                $stmt = mysqli_prepare($con, "INSERT INTO product (product_seller, product_seller_id, product_name, product_category, product_description, product_quantity, product_cost, product_img) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt = mysqli_prepare($con, "INSERT INTO product (product_seller, product_seller_id, product_name, product_category, product_description, product_quantity, product_cost, product_img, listing_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 
                 if ($stmt) {
                     // Bind parameters with appropriate types
-                    mysqli_stmt_bind_param($stmt, "ssssssss", 
+                    mysqli_stmt_bind_param($stmt, "sssssssss", 
                         $product_seller,
                         $product_seller_id,
                         $product_name,
@@ -92,7 +96,8 @@ if (!file_exists($upload_dir)) {
                         $product_description,
                         $product_quantity,
                         $product_cost,
-                        $product_img
+                        $product_img,
+                        $listing_type
                     );
                     
                     // Execute the statement
@@ -114,53 +119,77 @@ if (!file_exists($upload_dir)) {
             }
         } else {
         ?>
-            <h1>Add New Product</h1>
-
-            <form action="" method="post" enctype="multipart/form-data">
-                <p>Your name: <b><?php echo $res_Uname ?></b></p>
-                <p>Your ID#: <b><?php echo $res_id ?></b></p>
-
-                <div class="product input">
-                    <label for="product_name" style="width: 150px; display: Inline-block;">Product Name</label>
-                    <input type="text" name="product_name" id="product_name" autocomplete="off" required>
+            <div style="display: grid; gap: 20px;">
+                <div style="background: rgba(255, 255, 255, 0.9); padding: 15px; border-radius: 10px;">
+                    <p style="margin: 5px 0;">Your name: <b><?php echo $res_Uname ?></b></p>
+                    <p style="margin: 5px 0;">Your ID#: <b><?php echo $res_id ?></b></p>
                 </div>
 
-                <label for="product_category" style="width: 150px; display: Inline-block;">Select Category</label>
-                <select id="product_category" name="product_category" required>
-                    <option value="">--Choose Category--</option>
-                    <option value="Vehicle">Vehicle</option>
-                    <option value="Tool">Tool</option>
-                    <option value="Appliances">Appliances</option>
-                    <option value="House">House</option>
-                    <option value="Other">Other</option>
-                </select>
-                <br><br>
+                <form action="" method="post" enctype="multipart/form-data" style="display: grid; gap: 15px;">
+                    <div style="margin-bottom: 15px;">
+                        <label for="listing_type" style="display: block; margin-bottom: 5px; font-weight: bold;">Listing Type:</label>
+                        <div style="display: flex; gap: 20px;">
+                            <label style="cursor: pointer;">
+                                <input type="radio" name="listing_type" value="sell" required> Sell
+                            </label>
+                            <label style="cursor: pointer;">
+                                <input type="radio" name="listing_type" value="rent" required> Rent
+                            </label>
+                        </div>
+                    </div>
 
-                <div class="product input">
-                    <label for="product_description" style="width: 150px; display: Inline-block;">Product Description</label>
-                    <textarea name="product_description" id="product_description" rows="4" required></textarea>
-                </div>
+                    <div class="product input">
+                        <label for="product_name" style="width: 150px; display: inline-block; font-weight: bold;">Product Name</label>
+                        <input type="text" name="product_name" id="product_name" autocomplete="off" required 
+                               style="width: calc(100% - 170px); padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                    </div>
 
-                <div class="product input">
-                    <label for="product_quantity" style="width: 150px; display: Inline-block;">Product Quantity</label>
-                    <input type="number" name="product_quantity" id="product_quantity" min="1" autocomplete="off" required>
-                </div>
+                    <div class="product input">
+                        <label for="product_category" style="width: 150px; display: inline-block; font-weight: bold;">Select Category</label>
+                        <select id="product_category" name="product_category" required 
+                                style="width: calc(100% - 170px); padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                            <option value="">--Choose Category--</option>
+                            <option value="Vehicle">Vehicle</option>
+                            <option value="Tool">Tool</option>
+                            <option value="Appliances">Appliances</option>
+                            <option value="House">House</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
 
-                <div class="product input">
-                    <label for="product_cost" style="width: 150px; display: Inline-block;">Product Cost</label>
-                    <input type="number" name="product_cost" id="product_cost" min="0" step="0.01" autocomplete="off" required>
-                </div>
+                    <div class="product input">
+                        <label for="product_description" style="width: 150px; display: inline-block; font-weight: bold;">Product Description</label>
+                        <textarea name="product_description" id="product_description" rows="4" required
+                                  style="width: calc(100% - 170px); padding: 8px; border-radius: 5px; border: 1px solid #ccc;"></textarea>
+                    </div>
 
-                <div class="product input">
-                    <label for="product_img" style="width: 150px; display: Inline-block;">Product Image</label>
-                    <input type="file" name="product_img" id="product_img" accept=".jpg, .jpeg, .png" required>
-                    <small>Accepted formats: JPG, JPEG, PNG</small>
-                </div>
+                    <div class="product input">
+                        <label for="product_quantity" style="width: 150px; display: inline-block; font-weight: bold;">Product Quantity</label>
+                        <input type="number" name="product_quantity" id="product_quantity" min="1" autocomplete="off" required
+                               style="width: calc(100% - 170px); padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                    </div>
 
-                <div class="field">
-                    <input type="submit" class="btn" name="submit" value="Add Product">
-                </div>
-            </form>
+                    <div class="product input">
+                        <label for="product_cost" style="width: 150px; display: inline-block; font-weight: bold;">Product Cost</label>
+                        <input type="number" name="product_cost" id="product_cost" min="0" step="0.01" autocomplete="off" required
+                               style="width: calc(100% - 170px); padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                    </div>
+
+                    <div class="product input">
+                        <label for="product_img" style="width: 150px; display: inline-block; font-weight: bold;">Product Image</label>
+                        <div style="display: inline-block; width: calc(100% - 170px);">
+                            <input type="file" name="product_img" id="product_img" accept=".jpg, .jpeg, .png" required
+                                   style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                            <small style="color: #666;">Accepted formats: JPG, JPEG, PNG</small>
+                        </div>
+                    </div>
+
+                    <div class="field" style="text-align: center; margin-top: 20px;">
+                        <input type="submit" class="btn" name="submit" value="Add Product" 
+                               style="padding: 10px 30px; font-size: 16px;">
+                    </div>
+                </form>
+            </div>
         <?php } ?>
     </div>
 </body>

@@ -37,61 +37,79 @@ $products_result = $stmt->get_result();
     <?php include("php/header.php"); ?>
     <h1 style="color: #333; text-align: center; margin: 20px 0;">Manage Products</h1>
 
-    <div class="container" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-left: 100px;  margin-right: 100px; margin-bottom: 20px;">
+    <div class="container" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin: 20px 100px;">
         <!-- Display user's current products -->
         <div class="current-products">
-            <h2>Your Products</h2>
-            <?php if ($products_result->num_rows > 0): ?>
-                <table border="1">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Image</th>
-                            <th>Name</th>
-                            <th>Category</th>
-                            <th>Description</th>
-                            <th>Quantity</th>
-                            <th>Cost</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php while ($product_row = $products_result->fetch_assoc()): ?>
+            <h2 style="color: #333; margin-bottom: 20px;">Your Products</h2>
+            <?php if ($products_result && $products_result->num_rows > 0): ?>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; background: rgba(255, 255, 255, 0.9); margin-bottom: 20px;">
+                        <thead>
                             <tr>
-                                <td><?php echo htmlspecialchars($product_row['id']); ?></td>
-                                <td>
-                                    <img src="<?php echo htmlspecialchars($product_row['product_img']); ?>" 
-                                         alt="<?php echo htmlspecialchars($product_row['product_name']); ?>" 
-                                         style="width: 50px; height: 50px; object-fit: cover;">
-                                </td>
-                                <td><?php echo htmlspecialchars($product_row['product_name']); ?></td>
-                                <td><?php echo htmlspecialchars($product_row['product_category']); ?></td>
-                                <td><?php echo htmlspecialchars($product_row['product_description']); ?></td>
-                                <td><?php echo htmlspecialchars($product_row['product_quantity']); ?></td>
-                                <td>$<?php echo number_format($product_row['product_cost'], 2); ?></td>
+                                <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">ID</th>
+                                <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">Image</th>
+                                <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">Name</th>
+                                <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">Category</th>
+                                <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd;">Description</th>
+                                <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">Quantity</th>
+                                <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">Cost</th>
+                                <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">Listing Type</th>
                             </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php while ($product_row = $products_result->fetch_assoc()): ?>
+                                <tr>
+                                    <td style="padding: 12px; border: 1px solid #ddd; white-space: nowrap;"><?php echo htmlspecialchars($product_row['id']); ?></td>
+                                    <td style="padding: 12px; border: 1px solid #ddd; white-space: nowrap;">
+                                        <img src="<?php echo htmlspecialchars($product_row['product_img']); ?>" 
+                                             alt="<?php echo htmlspecialchars($product_row['product_name']); ?>" 
+                                             style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                                    </td>
+                                    <td style="padding: 12px; border: 1px solid #ddd; white-space: nowrap;"><?php echo htmlspecialchars($product_row['product_name']); ?></td>
+                                    <td style="padding: 12px; border: 1px solid #ddd; white-space: nowrap;"><?php echo htmlspecialchars($product_row['product_category']); ?></td>
+                                    <td style="padding: 12px; border: 1px solid #ddd; min-width: 300px; max-width: 500px;">
+                                        <?php echo nl2br(htmlspecialchars($product_row['product_description'])); ?>
+                                    </td>
+                                    <td style="padding: 12px; border: 1px solid #ddd; white-space: nowrap;"><?php echo htmlspecialchars($product_row['product_quantity']); ?></td>
+                                    <td style="padding: 12px; border: 1px solid #ddd; white-space: nowrap;">$<?php echo number_format($product_row['product_cost'], 2); ?></td>
+                                    <td style="padding: 12px; border: 1px solid #ddd; white-space: nowrap; text-transform: capitalize;"><?php echo htmlspecialchars($product_row['listing_type']); ?></td>
+                                </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                </div>
             <?php else: ?>
-                <p>You haven't added any products yet. <a href="addproduct.php">Add your first product</a></p>
+                <p style="text-align: center; color: #666; margin: 20px 0;">
+                    You haven't added any products yet. 
+                    <a href="addproduct.php" style="color: #6699CC; text-decoration: none;">Add your first product</a>
+                </p>
             <?php endif; ?>
         </div>
-
-        <hr class="section-divider">
-
-        
     </div>
 
-    <div class="container" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  margin-left: 100px;  margin-right: 100px; margin-bottom: 20px;">
+    <div class="container" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin: 20px 100px;">
                 <!-- Update or Delete Product Form -->
         <div class="manage-form">
             <h2>Update or Delete Product</h2>
-            <p>Enter the ID of the product you want to modify from your products list above:</p>
+            <p>Select the ID of the product you want to modify from your products list above:</p>
             
             <form method="post">
                 <div class="form-group">
                     <label for="product_id">Product ID:</label>
-                    <input type="number" id="product_id" name="product_id" required>
+                    <select id="product_id" name="product_id" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-top: 5px; background-color: white;">
+                        <option value="">--Select Product ID--</option>
+                        <?php
+                        // Reset the pointer to the beginning of the result set
+                        if ($products_result) {
+                            $products_result->data_seek(0);
+                            while ($row = $products_result->fetch_assoc()) {
+                                echo '<option value="' . htmlspecialchars($row['id']) . '">' . 
+                                     htmlspecialchars($row['id']) . ' - ' . htmlspecialchars($row['product_name']) . 
+                                     '</option>';
+                            }
+                        }
+                        ?>
+                    </select>
                 </div>
 
                 <div class="form-group">

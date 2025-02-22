@@ -9,7 +9,7 @@ session_start();
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style/style.css">
-    <title>Login</title>
+    <title>Admin Login</title>
 </head>
 
 <body style="background-image: url('Background Images/Background Image.png'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
@@ -28,34 +28,33 @@ session_start();
                 $email = mysqli_real_escape_string($con, $_POST['email']);
                 $password = mysqli_real_escape_string($con, $_POST['password']);
 
-                $result = mysqli_query($con, "SELECT * FROM users WHERE Email='$email' AND Password='$password' ") or die("Select Error");
+                $result = mysqli_query($con, "SELECT * FROM admin_credentials WHERE Email='$email' AND Password='$password' ") or die("Select Error");
                 $row = mysqli_fetch_assoc($result);
 
                 if (is_array($row) && !empty($row)) {
-                    $_SESSION['valid'] = $row['Email'];
-                    $_SESSION['username'] = $row['Username'];
-                    $_SESSION['age'] = $row['Age'];
-                    $_SESSION['id'] = $row['Id'];
+                    $_SESSION['admin_valid'] = $row['email'];
+                    $_SESSION['admin_username'] = $row['username'];
+                    $_SESSION['admin_id'] = $row['id'];
                 } else {
                     echo "<div class='message'>
-                    <p>Wrong Username or Password</p>
+                    <p>Wrong Admin Credentials</p>
                     </div> <br>";
-                    echo "<a href='index.php'><button class='btn'>Go Back</button>";
+                    echo "<a href='admin_login.php'><button class='btn'>Go Back</button>";
                 }
-                if (isset($_SESSION['valid'])) {
-                    header("Location: home.php");
+                if (isset($_SESSION['admin_valid'])) {
+                    header("Location: admin_dashboard.php");
                 }
             } else {
             ?>
-                <header>Login</header>
+                <header>Admin Login</header>
                 <form action="" method="post">
                     <div class="field input">
-                        <label for="email">Email</label>
+                        <label for="email">Admin Email</label>
                         <input type="text" name="email" id="email" autocomplete="off" required>
                     </div>
 
                     <div class="field input">
-                        <label for="password">Password</label>
+                        <label for="password">Admin Password</label>
                         <input type="password" name="password" id="password" autocomplete="off" required>
                     </div>
 
@@ -64,10 +63,7 @@ session_start();
                     </div>
 
                     <div class="links">
-                        Don't have account? <a href="register.php">Sign Up Now</a>
-                    </div>
-                    <div class="links">
-                        Admin? <a href="admin_login.php">Sign In</a>
+                        Regular User? <a href="index.php">User Login</a>
                     </div>
                 </form>
         </div>

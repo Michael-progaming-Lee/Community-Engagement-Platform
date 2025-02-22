@@ -16,30 +16,60 @@ $res_Age = $result['Age'];
 $res_id = $result['Id'];
 $user_parish = $result['Parish'];
 
+// Get the search query if it exists
+$search_query = isset($_GET['search']) ? $_GET['search'] : '';
+$search_by = isset($_GET['search_by']) ? $_GET['search_by'] : 'name';
+
 // Get the selected category from URL parameter, default to 'all'
 $selected_category = isset($_GET['category']) ? $_GET['category'] : 'all';
 
 // Define available categories
 $categories = ['Vehicle', 'Tool', 'Appliances', 'House', 'Other'];
 
-// Prepare the query based on selected category and user's parish
+// Prepare the query based on selected category, search query, and user's parish
 if ($selected_category !== 'all' && in_array($selected_category, $categories)) {
+    $search_condition = "";
+    switch($search_by) {
+        case 'description':
+            $search_condition = "p.product_description LIKE CONCAT('%', ?, '%')";
+            break;
+        case 'id':
+            $search_condition = "p.Id = ?";
+            break;
+        default: // name
+            $search_condition = "p.product_name LIKE CONCAT('%', ?, '%')";
+    }
+    
     $query = "SELECT p.*, u.Parish
             FROM product p
             JOIN users u ON p.product_seller = u.Username
             WHERE p.product_category = ?
             AND p.product_quantity > 0
-            AND u.Parish = ?";
+            AND u.Parish = ?
+            AND ($search_condition)";
     $stmt = $con->prepare($query);
-    $stmt->bind_param("ss", $selected_category, $user_parish);
+    $stmt->bind_param("sss", $selected_category, $user_parish, $search_query);
 } else {
+    $search_condition = "";
+    switch($search_by) {
+        case 'description':
+            $search_condition = "p.product_description LIKE CONCAT('%', ?, '%')";
+            break;
+        case 'id':
+            $search_condition = "p.Id = ?";
+            break;
+        default: // name
+            $search_condition = "p.product_name LIKE CONCAT('%', ?, '%')";
+    }
+    
     $query = "SELECT p.*, u.Parish
             FROM product p
             JOIN users u ON p.product_seller = u.Username
             WHERE p.product_quantity > 0
-            AND u.Parish = ?";
+            AND u.Parish = ?
+            AND ($search_condition)";
     $stmt = $con->prepare($query);
-    $stmt->bind_param("s", $user_parish);
+    $stmt->bind_param("ss", $user_parish, $search_query);
 }
 
 $stmt->execute();
@@ -104,6 +134,21 @@ $resultd = $stmt->get_result();
         </div>
 
         <div style="flex: 0 0 auto; display: flex; gap: 20px; align-items: center;">
+            <form action="" method="GET" style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" name="search" placeholder="Search products..." value="<?php echo htmlspecialchars($search_query); ?>" 
+                    style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; width: 250px;">
+                <select name="search_by" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                    <option value="name" <?php echo $search_by === 'name' ? 'selected' : ''; ?>>Name</option>
+                    <option value="description" <?php echo $search_by === 'description' ? 'selected' : ''; ?>>Description</option>
+                    <option value="id" <?php echo $search_by === 'id' ? 'selected' : ''; ?>>Product ID#</option>
+                </select>
+                <?php if(isset($_GET['category']) && $_GET['category'] != 'all'): ?>
+                    <input type="hidden" name="category" value="<?php echo htmlspecialchars($_GET['category']); ?>">
+                <?php endif; ?>
+                <button type="submit" class="btn" style="margin: 0; padding: 8px 15px; height: 35px;">Search</button>
+                <a href="<?php echo isset($_GET['category']) ? '?category=' . htmlspecialchars($_GET['category']) : 'home.php'; ?>" 
+                   class="btn" style="margin: 0; padding: 8px 15px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; height: 35px;">Reset</a>
+            </form>
             <a href="edituserinfo.php?Id=<?php echo $res_id ?>">Change Profile Information</a>
             <a href="php/logout.php"> <button class="btn">Log Out</button> </a>
         </div>

@@ -63,17 +63,136 @@ $comments_result = $comments_stmt->get_result();
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style/product_details.css">
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+        }
+        .product-image {
+            text-align: center;
+            background: transparent;
+        }
+        .product-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .product-info {
+            background: transparent;
+            padding: 25px;
+            border-radius: 10px;
+        }
+        .info-item {
+            display: block;
+            margin-bottom: 20px;
+        }
+        .label {
+            font-weight: bold;
+            color: #2c3e50;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 16px;
+            text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.5);
+        }
+        .value {
+            display: block;
+            color: #333;
+            font-size: 15px;
+            line-height: 1.6;
+            text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.5);
+        }
+        .price {
+            font-size: 24px;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        .rent-section {
+            grid-column: 1 / -1;
+            background: transparent;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .rent-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .form-group label {
+            font-weight: bold;
+            color: #2c3e50;
+            text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.5);
+        }
+        .form-group input {
+            padding: 10px;
+            border: 1px solid rgba(221, 221, 221, 0.7);
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            background: rgba(76, 68, 182, 0.808);
+            color: white;
+        }
+        .rent-btn {
+            background: rgba(76, 68, 182, 0.808);
+            color: white;
+        }
+        .negotiate-btn {
+            background: rgba(76, 68, 182, 0.808);
+            color: white;
+            text-decoration: none;
+        }
+        .success {
+            color: #1b5e20;
+            background: rgba(232, 245, 233, 0.4);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.5);
+        }
+        .error {
+            color: #b71c1c;
+            background: rgba(255, 235, 238, 0.4);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.5);
+        }
+    </style>
     <title><?php echo htmlspecialchars($product['product_name']); ?></title>
 </head>
 <body style="background-image: url('Background Images/Home_Background.png'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
 <?php include("php/header.php"); ?>
     <h1 style="color: #333; text-align: center; margin: 20px 0;"><?php echo htmlspecialchars($product['product_name']); ?></h1>
 
-    <div class="container" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin-bottom: 20px;">
+    <div class="container">
         <!-- Product Image -->
         <div class="product-image">
             <img src="<?php echo htmlspecialchars($product['product_img']); ?>" 
-                 alt="<?php echo htmlspecialchars($product['product_name']); ?>" style="width:300px;">
+                 alt="<?php echo htmlspecialchars($product['product_name']); ?>">
         </div>
         
         <!-- Product Information -->
@@ -83,45 +202,30 @@ $comments_result = $comments_stmt->get_result();
                 <span class="value"><?php echo htmlspecialchars($product['id']); ?></span>
             </span>
             
-            <br>    </br>
-            <br>    </br>
-            
             <span class="info-item">
                 <span class="label">Category:</span>
                 <span class="value"><?php echo htmlspecialchars($product['product_category']); ?></span>
             </span>
-            
-            <br>    </br>
-            <br>    </br>
             
             <span class="info-item">
                 <span class="label">Description:</span>
                 <span class="value"><?php echo htmlspecialchars($product['product_description']); ?></span>
             </span>
             
-            <br>    </br>
-            <br>    </br>
-            
             <span class="info-item">
                 <span class="label">Available Quantity:</span>
                 <span class="value"><?php echo htmlspecialchars($product['product_quantity']); ?></span>
             </span>
-            
-            <br>    </br>
-            <br>    </br>
 
             <span class="info-item">
                 <span class="label">Cost:</span>
                 <span class="value price">$<?php echo number_format($product['product_cost'], 2); ?></span>
             </span>
 
-            <br>    </br>
-            <br>    </br>
-
             <span class="info-item">
                 <span class="label">Seller:</span>
                 <span class="value"><?php echo htmlspecialchars($product['product_seller']); ?></span>
-</span>
+            </span>
         </div>
 
         <?php if ($is_owner): ?>
@@ -131,16 +235,16 @@ $comments_result = $comments_stmt->get_result();
         <?php else: ?>
             <!-- Rent Section -->
             <div class="rent-section">
-                <h2>Rent Product</h2>
+                <h2>Add to Cart</h2>
                 <form method="post" class="rent-form">
                     <div class="form-group">
-                        <label for="rent_quantity">Enter Quantity to Rent:</label>
+                        <label for="rent_quantity">Enter Quantity:</label>
                         <input type="number" id="rent_quantity" name="rent_quantity" 
                                min="1" max="<?php echo $product['product_quantity']; ?>" required>
                     </div>
                     <div class="button-group" style="display: flex; gap: 10px;">
-                        <button type="submit" class="btn rent-btn">Rent Now</button>
-                        <a href="negotiate-price.php?product_id=<?php echo $product_id; ?>" class="btn negotiate-btn" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Negotiate Price</a>
+                        <button type="submit" class="btn rent-btn">Add to Cart</button>
+                        <a href="negotiate-price.php?product_id=<?php echo $product_id; ?>" class="btn negotiate-btn" style="background-color: rgba(76, 68, 182, 0.808); color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Negotiate Price</a>
                     </div>
                 </form>
             </div>
