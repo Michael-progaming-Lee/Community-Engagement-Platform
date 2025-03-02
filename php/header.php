@@ -14,7 +14,7 @@ $res_id = $result['Id'];
 
 // Determine if we're in a subdirectory
 $isSubdir = strpos($_SERVER['PHP_SELF'], '/php/') !== false;
-$imgPath = $isSubdir ? '../Background Images/CommUnity Logo.png' : 'Background Images/CommUnity Logo.png';
+$imgPath = $isSubdir ? '../Background Images/CommUnity Logo.jpeg' : 'Background Images/CommUnity Logo.jpeg';
 $homePath = $isSubdir ? '../home.php' : 'home.php';
 ?>
 

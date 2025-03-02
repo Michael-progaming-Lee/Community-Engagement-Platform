@@ -126,7 +126,7 @@ $resultd = $stmt->get_result();
 <body style="background-image: url('Background Images/Home_Background.png'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
     <div class="nav" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(147, 163, 178, 0.8); backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center; padding: 0 20px;">
         <div class="logo" style="flex: 0 0 auto;">
-            <img src="Background Images/CommUnity Logo.png" alt="Company Logo" style="height: 50px;">
+            <img src="Background Images/CommUnity Logo.jpeg" alt="Company Logo" style="height: 50px;">
         </div>
 
         <div style="flex: 0 0 auto; text-align: center;">

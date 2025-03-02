@@ -7,6 +7,16 @@ $upload_dir = "uploads";
 if (!file_exists($upload_dir)) {
     mkdir($upload_dir, 0777, true);
 }
+
+// Create qrcodes directory if it doesn't exist
+$qr_dir = "qrcodes";
+if (!file_exists($qr_dir)) {
+    mkdir($qr_dir, 0777, true);
+}
+
+// Add QR code column if it doesn't exist
+$alter_query = "ALTER TABLE product ADD COLUMN IF NOT EXISTS product_qr_code VARCHAR(255) AFTER product_img";
+mysqli_query($con, $alter_query);
 ?>
 
 <!DOCTYPE html>
@@ -17,6 +27,7 @@ if (!file_exists($upload_dir)) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style/style.css">
     <link rel="stylesheet" href="style/addproduct.css">
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
     <title>Add Product</title>
 </head>
 <body style="background-image: url('Background Images/Add-Product.jpg'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
@@ -83,7 +94,7 @@ if (!file_exists($upload_dir)) {
             }
 
             if ($upload_status) {
-                // Prepare the statement
+                // First insert the product without QR code
                 $stmt = mysqli_prepare($con, "INSERT INTO product (product_seller, product_seller_id, product_name, product_category, product_description, product_quantity, product_cost, product_img, listing_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 
                 if ($stmt) {
@@ -102,9 +113,45 @@ if (!file_exists($upload_dir)) {
                     
                     // Execute the statement
                     if (mysqli_stmt_execute($stmt)) {
+                        $product_id = mysqli_insert_id($con);
+                        
+                        // Generate QR code and save as image
+                        $qr_filename = 'qrcodes/product_' . $product_id . '.png';
+                        $qr_filepath = __DIR__ . '/' . $qr_filename;
+                        $product_url = "http://" . $_SERVER['HTTP_HOST'] . "/Community%20Engagement%20Platform/product_details.php?id=" . $product_id;
+                        
+                        // Update the product with QR code path
+                        $update_stmt = mysqli_prepare($con, "UPDATE product SET product_qr_code = ? WHERE id = ?");
+                        mysqli_stmt_bind_param($update_stmt, "si", $qr_filename, $product_id);
+                        mysqli_stmt_execute($update_stmt);
+                        
                         echo "<div class='message success'>
-                        <p>Product has been added Successfully!</p><br>";
-                        echo "<a href='addproduct.php'><button class='btn'>Add Another Product</button></a></div>";
+                            <p>Product Added Successfully!</p>
+                            <div id='qrcode' style='margin: 20px auto; display: flex; justify-content: center; align-items: center;'></div>
+                            <p style='text-align: center;'>Scan this QR code to view product details</p>
+                            <script>
+                                new QRCode(document.getElementById('qrcode'), {
+                                    text: '" . $product_url . "',
+                                    width: 200,
+                                    height: 200
+                                });
+                                
+                                // Save QR code as image
+                                setTimeout(function() {
+                                    var qrCanvas = document.querySelector('#qrcode canvas');
+                                    var qrImage = qrCanvas.toDataURL('image/png');
+                                    
+                                    // Send QR code image to server
+                                    var xhr = new XMLHttpRequest();
+                                    xhr.open('POST', 'save_qr.php', true);
+                                    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                                    xhr.send('qr_image=' + encodeURIComponent(qrImage) + '&filename=" . urlencode($qr_filename) . "');
+                                }, 500);
+                            </script>
+                            <a href='addproduct.php' style='display: block; margin-top: 15px;'>
+                                <button class='btn'>Add Another Product</button>
+                            </a>
+                            </div>";
                     } else {
                         echo "<div class='message error'>
                         <p>Error occurred: " . mysqli_stmt_error($stmt) . "</p></div>";

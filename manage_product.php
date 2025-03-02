@@ -31,13 +31,14 @@ $products_result = $stmt->get_result();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style/style.css">
     <link rel="stylesheet" href="style/manage_product.css">
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
     <title>Manage Your Products</title>
 </head>
 <body style="background-image: url('Background Images/Home_Background.png'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
     <?php include("php/header.php"); ?>
     <h1 style="color: #333; text-align: center; margin: 20px 0;">Manage Products</h1>
 
-    <div class="container" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin: 20px 100px;">
+    <div class="container" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin: 20px 40px;">
         <!-- Display user's current products -->
         <div class="current-products">
             <h2 style="color: #333; margin-bottom: 20px;">Your Products</h2>
@@ -48,6 +49,7 @@ $products_result = $stmt->get_result();
                             <tr>
                                 <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">ID</th>
                                 <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">Image</th>
+                                <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">QR Code</th>
                                 <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">Name</th>
                                 <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">Category</th>
                                 <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd;">Description</th>
@@ -64,6 +66,22 @@ $products_result = $stmt->get_result();
                                         <img src="<?php echo htmlspecialchars($product_row['product_img']); ?>" 
                                              alt="<?php echo htmlspecialchars($product_row['product_name']); ?>" 
                                              style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                                    </td>
+                                    <td style="padding: 12px; border: 1px solid #ddd; white-space: nowrap;">
+                                        <?php if (!empty($product_row['product_qr_code'])): ?>
+                                            <img src="<?php echo htmlspecialchars($product_row['product_qr_code']); ?>" 
+                                                 alt="QR Code for <?php echo htmlspecialchars($product_row['product_name']); ?>" 
+                                                 style="width: 50px; height: 50px; object-fit: contain;">
+                                        <?php else: ?>
+                                            <div id="qrcode_<?php echo $product_row['id']; ?>" style="width: 50px; height: 50px;"></div>
+                                            <script>
+                                                new QRCode(document.getElementById("qrcode_<?php echo $product_row['id']; ?>"), {
+                                                    text: "http://<?php echo $_SERVER['HTTP_HOST']; ?>/Community%20Engagement%20Platform/product_details.php?id=<?php echo $product_row['id']; ?>",
+                                                    width: 50,
+                                                    height: 50
+                                                });
+                                            </script>
+                                        <?php endif; ?>
                                     </td>
                                     <td style="padding: 12px; border: 1px solid #ddd; white-space: nowrap;"><?php echo htmlspecialchars($product_row['product_name']); ?></td>
                                     <td style="padding: 12px; border: 1px solid #ddd; white-space: nowrap;"><?php echo htmlspecialchars($product_row['product_category']); ?></td>
@@ -87,7 +105,7 @@ $products_result = $stmt->get_result();
         </div>
     </div>
 
-    <div class="container" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin: 20px 100px;">
+    <div class="container" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin: 20px 40px;">
                 <!-- Update or Delete Product Form -->
         <div class="manage-form">
             <h2>Update or Delete Product</h2>
