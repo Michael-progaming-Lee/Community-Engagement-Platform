@@ -10,15 +10,16 @@ $id = $_SESSION['id'];
 $query = mysqli_query($con, "SELECT * FROM users WHERE Id=$id");
 $result = mysqli_fetch_assoc($query);
 $username = $result['Username'];
+$user_id = $result['Id'];
 
 // Initialize error variable
 $error = "";
 $product = null; // Variable to store product details if found
 
 // Get products for this user only
-$products_query = "SELECT * FROM product WHERE product_seller = ?";
+$products_query = "SELECT * FROM product WHERE product_seller_id = ?";
 $stmt = $con->prepare($products_query);
-$stmt->bind_param("s", $username);
+$stmt->bind_param("i", $user_id);
 $stmt->execute();
 $products_result = $stmt->get_result();
 ?>
@@ -54,7 +55,7 @@ $products_result = $stmt->get_result();
                                 <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">Category</th>
                                 <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd;">Description</th>
                                 <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">Quantity</th>
-                                <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">Cost</th>
+                                <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">Price/Rates</th>
                                 <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">Listing Type</th>
                             </tr>
                         </thead>
@@ -89,7 +90,24 @@ $products_result = $stmt->get_result();
                                         <?php echo nl2br(htmlspecialchars($product_row['product_description'])); ?>
                                     </td>
                                     <td style="padding: 12px; border: 1px solid #ddd; white-space: nowrap;"><?php echo htmlspecialchars($product_row['product_quantity']); ?></td>
-                                    <td style="padding: 12px; border: 1px solid #ddd; white-space: nowrap;">$<?php echo number_format($product_row['product_cost'], 2); ?></td>
+                                    <td style="padding: 12px; border: 1px solid #ddd;">
+                                        <?php if ($product_row['listing_type'] === 'sell'): ?>
+                                            $<?php echo number_format($product_row['product_cost'], 2); ?>
+                                        <?php else: ?>
+                                            <?php if ($product_row['daily_rate']): ?>
+                                                Daily: $<?php echo number_format($product_row['daily_rate'], 2); ?><br>
+                                            <?php endif; ?>
+                                            <?php if ($product_row['weekly_rate']): ?>
+                                                Weekly: $<?php echo number_format($product_row['weekly_rate'], 2); ?><br>
+                                            <?php endif; ?>
+                                            <?php if ($product_row['monthly_rate']): ?>
+                                                Monthly: $<?php echo number_format($product_row['monthly_rate'], 2); ?>
+                                            <?php endif; ?>
+                                            <?php if (!$product_row['daily_rate'] && !$product_row['weekly_rate'] && !$product_row['monthly_rate']): ?>
+                                                Contact for rates
+                                            <?php endif; ?>
+                                        <?php endif; ?>
+                                    </td>
                                     <td style="padding: 12px; border: 1px solid #ddd; white-space: nowrap; text-transform: capitalize;"><?php echo htmlspecialchars($product_row['listing_type']); ?></td>
                                 </tr>
                             <?php endwhile; ?>
@@ -219,9 +237,9 @@ $products_result = $stmt->get_result();
             $action = isset($_POST['action']) ? $_POST['action'] : '';
 
             // Check if product ID exists in the database and belongs to the current user
-            $query = "SELECT * FROM product WHERE id = ? AND product_seller = ?";
+            $query = "SELECT * FROM product WHERE id = ? AND product_seller_id = ?";
             $stmt = $con->prepare($query);
-            $stmt->bind_param("is", $product_id, $username);
+            $stmt->bind_param("ii", $product_id, $user_id);
             $stmt->execute();
             $result = $stmt->get_result();
 
@@ -259,13 +277,13 @@ $products_result = $stmt->get_result();
                     }
 
                     if (!empty($updates)) {
-                        // Add the product_id and username parameters
-                        $types .= "is";
+                        // Add the product_id and user_id parameters
+                        $types .= "ii";
                         $params[] = $product_id;
-                        $params[] = $username;
+                        $params[] = $user_id;
 
                         $update_query = "UPDATE product SET " . implode(", ", $updates) . 
-                                      " WHERE id = ? AND product_seller = ?";
+                                      " WHERE id = ? AND product_seller_id = ?";
                         $update_stmt = $con->prepare($update_query);
 
                         // Create the parameter array for bind_param
@@ -287,9 +305,9 @@ $products_result = $stmt->get_result();
                     }
                 } elseif ($action == 'delete') {
                     // Delete logic
-                    $delete_query = "DELETE FROM product WHERE id = ? AND product_seller = ?";
+                    $delete_query = "DELETE FROM product WHERE id = ? AND product_seller_id = ?";
                     $delete_stmt = $con->prepare($delete_query);
-                    $delete_stmt->bind_param("is", $product_id, $username);
+                    $delete_stmt->bind_param("ii", $product_id, $user_id);
 
                     if ($delete_stmt->execute()) {
                         echo "<p class='success'>Product deleted successfully.</p>";

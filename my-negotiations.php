@@ -17,11 +17,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_negotiations']
                         WHERE id IN ($ids_string) 
                         AND (seller_response = 'rejected' OR seller_response = 'accepted')
                         AND (user_id = ? OR 
-                            product_id IN (SELECT id FROM product WHERE product_seller = ?))";
+                            product_id IN (SELECT id FROM product WHERE product_seller_id = ?))";
         $delete_stmt = $con->prepare($delete_query);
         $username = $_SESSION['username'];
         $user_id = $_SESSION['id'];
-        $delete_stmt->bind_param("is", $user_id, $username);
+        $delete_stmt->bind_param("ii", $user_id, $user_id);
         $delete_stmt->execute();
         
         if ($delete_stmt->affected_rows > 0) {
@@ -41,23 +41,24 @@ $user_id = $_SESSION['id'];
 $negotiations_query = "SELECT n.*, 
                              p.product_name,
                              p.product_cost as original_price,
-                             p.product_seller,
+                             u_seller.Username as product_seller,
                              CASE 
-                                WHEN p.product_seller = ? THEN 'seller'
+                                WHEN p.product_seller_id = ? THEN 'seller'
                                 ELSE 'buyer'
                              END as user_role,
                              CASE 
-                                WHEN p.product_seller = ? THEN u_buyer.username
-                                ELSE p.product_seller
+                                WHEN p.product_seller_id = ? THEN u_buyer.Username
+                                ELSE u_seller.Username
                              END as other_party
                       FROM price_Negotiation n
                       JOIN product p ON n.product_id = p.id
-                      JOIN users u_buyer ON n.user_id = u_buyer.id
-                      WHERE p.product_seller = ? OR n.user_id = ?
+                      JOIN users u_buyer ON n.user_id = u_buyer.Id
+                      JOIN users u_seller ON p.product_seller_id = u_seller.Id
+                      WHERE p.product_seller_id = ? OR n.user_id = ?
                       ORDER BY n.created_at DESC";
 
 $stmt = $con->prepare($negotiations_query);
-$stmt->bind_param("sssi", $username, $username, $username, $user_id);
+$stmt->bind_param("iiii", $user_id, $user_id, $user_id, $user_id);
 $stmt->execute();
 $negotiations = $stmt->get_result();
 ?>

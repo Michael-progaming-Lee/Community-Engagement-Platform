@@ -4,6 +4,64 @@ session_start();
 // Include database connection
 include("php/config.php");
 
+// Handle cart count API request
+if (isset($_GET['action']) && $_GET['action'] === 'get_cart_count') {
+    if (!isset($_SESSION['id'])) {
+        echo json_encode(['count' => 0]);
+        exit;
+    }
+
+    $user_id = $_SESSION['id'];
+
+    // Get total number of items in cart
+    $query = "SELECT COUNT(*) as item_count FROM users_cart WHERE UserID = ?";
+    $stmt = $con->prepare($query);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $data = $result->fetch_assoc();
+
+    echo json_encode(['count' => (int)$data['item_count']]);
+    exit;
+}
+
+// Handle filtered count API request
+if (isset($_GET['action']) && $_GET['action'] === 'get_filtered_count') {
+    header('Content-Type: application/json');
+    
+    // Initialize search condition
+    $searchCondition = "";
+    if (isset($_GET['search']) && isset($_GET['criteria'])) {
+        $search = mysqli_real_escape_string($con, $_GET['search']);
+        $criteria = mysqli_real_escape_string($con, $_GET['criteria']);
+        
+        switch ($criteria) {
+            case 'id':
+                $searchCondition = "WHERE Id = '$search'";
+                break;
+            case 'username':
+                $searchCondition = "WHERE Username LIKE '%$search%'";
+                break;
+            case 'email':
+                $searchCondition = "WHERE Email LIKE '%$search%'";
+                break;
+        }
+    }
+    
+    // Get count of filtered results
+    $query = "SELECT COUNT(*) as count FROM users $searchCondition";
+    $result = mysqli_query($con, $query);
+    
+    if ($result) {
+        $count = mysqli_fetch_assoc($result)['count'];
+        echo json_encode(['count' => $count]);
+    } else {
+        http_response_code(500);
+        echo json_encode(['error' => 'Error counting users: ' . mysqli_error($con)]);
+    }
+    exit;
+}
+
 // Debug database connection and table
 if ($con) {
     $test_query = "SHOW TABLES LIKE 'users'";
@@ -349,7 +407,7 @@ if (!isset($_SESSION['admin_valid'])) {
                 document.getElementById('userTableContainer').innerHTML = html;
 
                 // Update total count for filtered results
-                const countResponse = await fetch(`php/get_filtered_count.php?search=${encodeURIComponent(searchInput)}&criteria=${searchCriteria}`);
+                const countResponse = await fetch(`admin_dashboard.php?action=get_filtered_count&search=${encodeURIComponent(searchInput)}&criteria=${searchCriteria}`);
                 if (!countResponse.ok) throw new Error('Network response was not ok');
                 const countData = await countResponse.json();
                 document.getElementById('totalUsersCount').textContent = countData.count;
@@ -369,7 +427,7 @@ if (!isset($_SESSION['admin_valid'])) {
                 document.getElementById('userTableContainer').innerHTML = html;
 
                 // Reset total count
-                const countResponse = await fetch('php/get_filtered_count.php');
+                const countResponse = await fetch('admin_dashboard.php?action=get_filtered_count');
                 if (!countResponse.ok) throw new Error('Network response was not ok');
                 const countData = await countResponse.json();
                 document.getElementById('totalUsersCount').textContent = countData.count;

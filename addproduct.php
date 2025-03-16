@@ -29,6 +29,52 @@ mysqli_query($con, $alter_query);
     <link rel="stylesheet" href="style/addproduct.css">
     <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
     <title>Add Product</title>
+    <script>
+        function toggleRentalOptions() {
+            const listingType = document.querySelector('input[name="listing_type"]:checked')?.value;
+            const rentalOptions = document.getElementById('rental_options');
+            const regularPrice = document.getElementById('regular_price');
+            const productCost = document.getElementById('product_cost');
+            
+            if (listingType === 'rent') {
+                rentalOptions.style.display = 'grid';
+                regularPrice.style.display = 'none';
+                productCost.required = false;
+                // Make at least one rental rate required
+                document.querySelectorAll('.rental-rate').forEach(input => {
+                    input.addEventListener('input', validateRentalRates);
+                });
+            } else {
+                rentalOptions.style.display = 'none';
+                regularPrice.style.display = 'block';
+                productCost.required = true;
+                document.querySelectorAll('.rental-rate').forEach(input => {
+                    input.required = false;
+                });
+            }
+        }
+
+        function validateRentalRates() {
+            const dailyRate = document.getElementById('daily_rate');
+            const weeklyRate = document.getElementById('weekly_rate');
+            const monthlyRate = document.getElementById('monthly_rate');
+            const listingType = document.querySelector('input[name="listing_type"]:checked')?.value;
+
+            if (listingType === 'rent') {
+                const hasValue = dailyRate.value || weeklyRate.value || monthlyRate.value;
+                [dailyRate, weeklyRate, monthlyRate].forEach(input => {
+                    input.required = !hasValue;
+                });
+            }
+        }
+
+        window.onload = function() {
+            document.querySelectorAll('input[name="listing_type"]').forEach(radio => {
+                radio.addEventListener('change', toggleRentalOptions);
+            });
+            toggleRentalOptions(); // Initialize the form state
+        }
+    </script>
 </head>
 <body style="background-image: url('Background Images/Add-Product.jpg'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
     <?php include("php/header.php"); ?>
@@ -59,8 +105,27 @@ mysqli_query($con, $alter_query);
             $product_category = $_POST['product_category'];
             $product_description = $_POST['product_description'];
             $product_quantity = $_POST['product_quantity'];
-            $product_cost = $_POST['product_cost'];
             $listing_type = $_POST['listing_type'];
+            
+            // Handle pricing based on listing type
+            if ($listing_type === 'rent') {
+                $daily_rate = !empty($_POST['daily_rate']) ? $_POST['daily_rate'] : NULL;
+                $weekly_rate = !empty($_POST['weekly_rate']) ? $_POST['weekly_rate'] : NULL;
+                $monthly_rate = !empty($_POST['monthly_rate']) ? $_POST['monthly_rate'] : NULL;
+                
+                // Validate that at least one rate is provided
+                if (!$daily_rate && !$weekly_rate && !$monthly_rate) {
+                    echo "<div class='message error'>
+                    <p>Please provide at least one rental rate (daily, weekly, or monthly).</p></div>";
+                    exit;
+                }
+                $product_cost = NULL;
+            } else {
+                $product_cost = $_POST['product_cost'];
+                $daily_rate = NULL;
+                $weekly_rate = NULL;
+                $monthly_rate = NULL;
+            }
 
             // Handle file upload
             $upload_status = true;
@@ -95,12 +160,11 @@ mysqli_query($con, $alter_query);
 
             if ($upload_status) {
                 // First insert the product without QR code
-                $stmt = mysqli_prepare($con, "INSERT INTO product (product_seller, product_seller_id, product_name, product_category, product_description, product_quantity, product_cost, product_img, listing_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt = mysqli_prepare($con, "INSERT INTO product (product_seller_id, product_name, product_category, product_description, product_quantity, product_cost, product_img, listing_type, daily_rate, weekly_rate, monthly_rate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 
                 if ($stmt) {
                     // Bind parameters with appropriate types
-                    mysqli_stmt_bind_param($stmt, "sssssssss", 
-                        $product_seller,
+                    mysqli_stmt_bind_param($stmt, "ssssssssddd", 
                         $product_seller_id,
                         $product_name,
                         $product_category,
@@ -108,7 +172,10 @@ mysqli_query($con, $alter_query);
                         $product_quantity,
                         $product_cost,
                         $product_img,
-                        $listing_type
+                        $listing_type,
+                        $daily_rate,
+                        $weekly_rate,
+                        $monthly_rate
                     );
                     
                     // Execute the statement
@@ -216,10 +283,33 @@ mysqli_query($con, $alter_query);
                                style="width: calc(100% - 170px); padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
                     </div>
 
-                    <div class="product input">
-                        <label for="product_cost" style="width: 150px; display: inline-block; font-weight: bold;">Product Cost</label>
-                        <input type="number" name="product_cost" id="product_cost" min="0" step="0.01" autocomplete="off" required
+                    <div id="regular_price" class="product input">
+                        <label for="product_cost" style="width: 150px; display: inline-block; font-weight: bold;">Price ($)</label>
+                        <input type="number" step="0.01" name="product_cost" id="product_cost" autocomplete="off" required 
                                style="width: calc(100% - 170px); padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                    </div>
+
+                    <div id="rental_options" style="display: none; gap: 15px;">
+                        <div class="product input">
+                            <label for="daily_rate" style="width: 150px; display: inline-block; font-weight: bold;">Daily Rate ($)</label>
+                            <input type="number" step="0.01" name="daily_rate" id="daily_rate" min="0" autocomplete="off"
+                                   class="rental-rate" style="width: calc(100% - 170px); padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                            <small style="margin-left: 150px; color: #666;">Leave empty if not offering daily rentals</small>
+                        </div>
+                        
+                        <div class="product input">
+                            <label for="weekly_rate" style="width: 150px; display: inline-block; font-weight: bold;">Weekly Rate ($)</label>
+                            <input type="number" step="0.01" name="weekly_rate" id="weekly_rate" min="0" autocomplete="off"
+                                   class="rental-rate" style="width: calc(100% - 170px); padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                            <small style="margin-left: 150px; color: #666;">Leave empty if not offering weekly rentals</small>
+                        </div>
+                        
+                        <div class="product input">
+                            <label for="monthly_rate" style="width: 150px; display: inline-block; font-weight: bold;">Monthly Rate ($)</label>
+                            <input type="number" step="0.01" name="monthly_rate" id="monthly_rate" min="0" autocomplete="off"
+                                   class="rental-rate" style="width: calc(100% - 170px); padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+                            <small style="margin-left: 150px; color: #666;">Leave empty if not offering monthly rentals</small>
+                        </div>
                     </div>
 
                     <div class="product input">

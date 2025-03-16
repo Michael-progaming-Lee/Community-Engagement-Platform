@@ -23,10 +23,13 @@ $search_by = isset($_GET['search_by']) ? $_GET['search_by'] : 'name';
 // Get the selected category from URL parameter, default to 'all'
 $selected_category = isset($_GET['category']) ? $_GET['category'] : 'all';
 
+// Get the selected listing type from URL parameter, default to 'all'
+$listing_type = isset($_GET['listing_type']) ? $_GET['listing_type'] : 'all';
+
 // Define available categories
 $categories = ['Vehicle', 'Tool', 'Appliances', 'House', 'Other'];
 
-// Prepare the query based on selected category, search query, and user's parish
+// Prepare the query based on selected category, listing type, search query, and user's parish
 if ($selected_category !== 'all' && in_array($selected_category, $categories)) {
     $search_condition = "";
     switch($search_by) {
@@ -40,15 +43,33 @@ if ($selected_category !== 'all' && in_array($selected_category, $categories)) {
             $search_condition = "p.product_name LIKE CONCAT('%', ?, '%')";
     }
     
+    // Base query with category filter
     $query = "SELECT p.*, u.Parish
-            FROM product p
-            JOIN users u ON p.product_seller = u.Username
-            WHERE p.product_category = ?
-            AND p.product_quantity > 0
-            AND u.Parish = ?
-            AND ($search_condition)";
+              FROM product p
+              JOIN users u ON p.product_seller_id = u.Id
+              WHERE p.product_category = ?
+              AND p.product_quantity > 0
+              AND u.Parish = ?";
+    
+    // Add listing type filter if selected
+    if ($listing_type !== 'all') {
+        $query .= " AND p.listing_type = ?";
+    }
+    
+    // Add search condition
+    $query .= " AND $search_condition";
+    
     $stmt = $con->prepare($query);
-    $stmt->bind_param("sss", $selected_category, $user_parish, $search_query);
+    if (!$stmt) {
+        die("Query preparation failed: " . $con->error);
+    }
+    
+    // Bind parameters based on whether listing type is filtered
+    if ($listing_type !== 'all') {
+        $stmt->bind_param("ssss", $selected_category, $user_parish, $listing_type, $search_query);
+    } else {
+        $stmt->bind_param("sss", $selected_category, $user_parish, $search_query);
+    }
 } else {
     $search_condition = "";
     switch($search_by) {
@@ -62,14 +83,32 @@ if ($selected_category !== 'all' && in_array($selected_category, $categories)) {
             $search_condition = "p.product_name LIKE CONCAT('%', ?, '%')";
     }
     
+    // Base query without category filter
     $query = "SELECT p.*, u.Parish
-            FROM product p
-            JOIN users u ON p.product_seller = u.Username
-            WHERE p.product_quantity > 0
-            AND u.Parish = ?
-            AND ($search_condition)";
+              FROM product p
+              JOIN users u ON p.product_seller_id = u.Id
+              WHERE p.product_quantity > 0
+              AND u.Parish = ?";
+    
+    // Add listing type filter if selected
+    if ($listing_type !== 'all') {
+        $query .= " AND p.listing_type = ?";
+    }
+    
+    // Add search condition
+    $query .= " AND $search_condition";
+    
     $stmt = $con->prepare($query);
-    $stmt->bind_param("ss", $user_parish, $search_query);
+    if (!$stmt) {
+        die("Query preparation failed: " . $con->error);
+    }
+    
+    // Bind parameters based on whether listing type is filtered
+    if ($listing_type !== 'all') {
+        $stmt->bind_param("sss", $user_parish, $listing_type, $search_query);
+    } else {
+        $stmt->bind_param("ss", $user_parish, $search_query);
+    }
 }
 
 $stmt->execute();
@@ -121,39 +160,139 @@ $resultd = $stmt->get_result();
             changeBackground(category);
         });
     </script>
+    
+    <style>
+        .search-container {
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            max-width: 1200px;
+            padding: 20px;
+        }
+
+        .search-form {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .search-input {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            flex-grow: 1;
+            padding: 10px;
+            min-width: 200px;
+        }
+
+        .search-select {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+        }
+
+        .search-btn, .reset-btn {
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            padding: 10px 15px;
+            text-decoration: none;
+        }
+
+        .reset-btn {
+            background-color: #f44336;
+        }
+
+        .search-btn:hover {
+            background-color: #45a049;
+        }
+
+        .reset-btn:hover {
+            background-color: #d32f2f;
+        }
+
+        .profile-btn {
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            padding: 10px 15px;
+            text-decoration: none;
+        }
+
+        .profile-btn:hover {
+            background-color: #45a049;
+        }
+
+        @media (max-width: 768px) {
+            .search-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-input, .search-select, .search-btn, .reset-btn, .profile-btn {
+                width: 100%;
+            }
+        }
+        
+        /* Navigation button styles */
+        .nav-btn {
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            padding: 10px 15px;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background-color: #45a049;
+        }
+        
+        .nav-btn-blue {
+            background-color: #0066cc;
+        }
+        
+        .nav-btn-blue:hover {
+            background-color: #0055aa;
+        }
+    </style>
 </head>
 
 <body style="background-image: url('Background Images/Home_Background.png'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
-    <div class="nav" style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(147, 163, 178, 0.8); backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center; padding: 0 20px;">
-        <div class="logo" style="flex: 0 0 auto;">
-            <img src="Background Images/CommUnity Logo.jpeg" alt="Company Logo" style="height: 50px;">
-        </div>
-
-        <div style="flex: 0 0 auto; text-align: center;">
-            <h1 style="margin: 0; font-size: 24px; color: #333;">CommUnity Rentals</h1>
-        </div>
-
-        <div style="flex: 0 0 auto; display: flex; gap: 20px; align-items: center;">
-            <form action="" method="GET" style="display: flex; gap: 10px; align-items: center;">
-                <input type="text" name="search" placeholder="Search products..." value="<?php echo htmlspecialchars($search_query); ?>" 
-                    style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; width: 250px;">
-                <select name="search_by" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
-                    <option value="name" <?php echo $search_by === 'name' ? 'selected' : ''; ?>>Name</option>
-                    <option value="description" <?php echo $search_by === 'description' ? 'selected' : ''; ?>>Description</option>
-                    <option value="id" <?php echo $search_by === 'id' ? 'selected' : ''; ?>>Product ID#</option>
-                </select>
-                <?php if(isset($_GET['category']) && $_GET['category'] != 'all'): ?>
-                    <input type="hidden" name="category" value="<?php echo htmlspecialchars($_GET['category']); ?>">
-                <?php endif; ?>
-                <button type="submit" class="btn" style="margin: 0; padding: 8px 15px; height: 35px;">Search</button>
-                <a href="<?php echo isset($_GET['category']) ? '?category=' . htmlspecialchars($_GET['category']) : 'home.php'; ?>" 
-                   class="btn" style="margin: 0; padding: 8px 15px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; height: 35px;">Reset</a>
-            </form>
-            <a href="edituserinfo.php?Id=<?php echo $res_id ?>">Change Profile Information</a>
-            <a href="php/logout.php"> <button class="btn">Log Out</button> </a>
-        </div>
+    <?php include("php/header.php"); ?>
+    
+    <!-- Search Container -->
+    <div class="search-container">
+        <form action="" method="GET" class="search-form">
+            <input type="text" name="search" placeholder="Search products..." value="<?php echo htmlspecialchars($search_query); ?>" class="search-input">
+            <select name="search_by" class="search-select">
+                <option value="name" <?php echo $search_by === 'name' ? 'selected' : ''; ?>>Name</option>
+                <option value="description" <?php echo $search_by === 'description' ? 'selected' : ''; ?>>Description</option>
+                <option value="id" <?php echo $search_by === 'id' ? 'selected' : ''; ?>>Product ID#</option>
+            </select>
+            <select name="listing_type" class="search-select">
+                <option value="all" <?php echo $listing_type === 'all' ? 'selected' : ''; ?>>All Listings</option>
+                <option value="rent" <?php echo $listing_type === 'rent' ? 'selected' : ''; ?>>Rentals</option>
+                <option value="sell" <?php echo $listing_type === 'sell' ? 'selected' : ''; ?>>For Sale</option>
+            </select>
+            <?php if(isset($_GET['category']) && $_GET['category'] != 'all'): ?>
+                <input type="hidden" name="category" value="<?php echo htmlspecialchars($_GET['category']); ?>">
+            <?php endif; ?>
+            <button type="submit" class="search-btn">Search</button>
+            <a href="<?php echo isset($_GET['category']) ? '?category=' . htmlspecialchars($_GET['category']) : 'home.php'; ?>" class="reset-btn">Reset</a>
+            <a href="edituserinfo.php?Id=<?php echo $res_id ?>" class="nav-btn">Change Profile Information</a>
+        </form>
     </div>
-    <div style="height: 70px;"></div>
 
     <main>
         <!-- Welcome Message-->
