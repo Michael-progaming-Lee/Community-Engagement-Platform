@@ -49,7 +49,8 @@ if ($selected_category !== 'all' && in_array($selected_category, $categories)) {
               JOIN users u ON p.product_seller_id = u.Id
               WHERE p.product_category = ?
               AND p.product_quantity > 0
-              AND u.Parish = ?";
+              AND u.Parish = ?
+              AND p.status = 'approved'";
     
     // Add listing type filter if selected
     if ($listing_type !== 'all') {
@@ -88,7 +89,8 @@ if ($selected_category !== 'all' && in_array($selected_category, $categories)) {
               FROM product p
               JOIN users u ON p.product_seller_id = u.Id
               WHERE p.product_quantity > 0
-              AND u.Parish = ?";
+              AND u.Parish = ?
+              AND p.status = 'approved'";
     
     // Add listing type filter if selected
     if ($listing_type !== 'all') {
@@ -367,7 +369,27 @@ $resultd = $stmt->get_result();
                             <div class="product-info">
                                 <div class="product-name"><?php echo htmlspecialchars($row['product_name']); ?></div>
                                 <div class="product-category">Category: <?php echo htmlspecialchars($row['product_category']); ?></div>
-                                <div class="product-cost">$<?php echo number_format($row['product_cost'], 2); ?></div>
+                                <?php if ($row['listing_type'] === 'rent'): ?>
+                                    <div class="product-cost">
+                                        <strong>Rental Rates:</strong>
+                                        <?php if (isset($row['daily_rate']) && $row['daily_rate'] > 0): ?>
+                                            <div>Daily: $<?php echo number_format($row['daily_rate'], 2); ?></div>
+                                        <?php endif; ?>
+                                        <?php if (isset($row['weekly_rate']) && $row['weekly_rate'] > 0): ?>
+                                            <div>Weekly: $<?php echo number_format($row['weekly_rate'], 2); ?></div>
+                                        <?php endif; ?>
+                                        <?php if (isset($row['monthly_rate']) && $row['monthly_rate'] > 0): ?>
+                                            <div>Monthly: $<?php echo number_format($row['monthly_rate'], 2); ?></div>
+                                        <?php endif; ?>
+                                        <?php if ((!isset($row['daily_rate']) || $row['daily_rate'] <= 0) && 
+                                                  (!isset($row['weekly_rate']) || $row['weekly_rate'] <= 0) && 
+                                                  (!isset($row['monthly_rate']) || $row['monthly_rate'] <= 0)): ?>
+                                            <div>$<?php echo number_format($row['product_cost'], 2); ?></div>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php else: ?>
+                                    <div class="product-cost">$<?php echo number_format($row['product_cost'], 2); ?></div>
+                                <?php endif; ?>
                                 <div class="product-quantity">Available: <?php echo $row['product_quantity']; ?></div>
                             </div>
                         </a>

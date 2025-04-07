@@ -2,6 +2,31 @@
 session_start();
 require_once 'php/config.php';
 
+// Check if the price_negotiation table exists and create it if needed
+$tableCheckQuery = "SHOW TABLES LIKE 'price_negotiation'";
+$result = $con->query($tableCheckQuery);
+
+if ($result->num_rows == 0) {
+    // Table doesn't exist, create it
+    $createTableQuery = "CREATE TABLE price_negotiation (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        product_id INT NOT NULL,
+        user_id INT NOT NULL,
+        seller_id INT NOT NULL,
+        original_price DECIMAL(10,2) NOT NULL,
+        proposed_price DECIMAL(10,2) NOT NULL,
+        seller_response ENUM('pending', 'accepted', 'rejected') DEFAULT 'pending',
+        final_price DECIMAL(10,2) NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE
+    )";
+    
+    $con->query($createTableQuery);
+}
+
 // Check if user is logged in
 if (!isset($_SESSION['username'])) {
     header('Location: login.php');
@@ -38,10 +63,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['propose_price'])) {
     if ($proposed_price <= 0) {
         echo "<script>alert('Please enter a valid price.');</script>";
     } else {
-        $insert_query = "INSERT INTO price_Negotiation (product_id, user_id, seller_id, original_price, proposed_price) 
+        $insert_query = "INSERT INTO price_negotiation (product_id, user_id, seller_id, original_price, proposed_price) 
                         VALUES (?, ?, ?, ?, ?)";
         $stmt = $con->prepare($insert_query);
-        $stmt->bind_param("iiiss", $product_id, $user_id, $product['product_seller_id'], $product['product_cost'], $proposed_price);
+        $stmt->bind_param("iiidd", $product_id, $user_id, $product['product_seller_id'], $product['product_cost'], $proposed_price);
+        
         if (!$stmt->execute()) {
             echo "<script>alert('Error: " . $stmt->error . "');</script>";
         } else {
@@ -73,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['negotiation_response'
     
     try {
         // Get the negotiation details
-        $get_proposal_query = "SELECT proposed_price FROM price_Negotiation WHERE id = ? AND seller_id = ?";
+        $get_proposal_query = "SELECT proposed_price FROM price_negotiation WHERE id = ? AND seller_id = ?";
         $stmt = $con->prepare($get_proposal_query);
         $stmt->bind_param("ii", $negotiation_id, $user_id);
         $stmt->execute();
@@ -87,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['negotiation_response'
         $final_price = $response === 'accepted' ? $proposal['proposed_price'] : null;
         
         // Update negotiation status
-        $update_query = "UPDATE price_Negotiation 
+        $update_query = "UPDATE price_negotiation 
                        SET seller_response = ?, 
                            final_price = ?
                        WHERE id = ? AND seller_id = ?";
@@ -111,7 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['negotiation_response'
             }
             
             // Reject other pending negotiations
-            $reject_others_query = "UPDATE price_Negotiation 
+            $reject_others_query = "UPDATE price_negotiation 
                                   SET seller_response = 'rejected' 
                                   WHERE product_id = ? 
                                   AND id != ? 
@@ -150,7 +176,7 @@ $is_seller = ($product['seller_username'] === $username);
 
 if ($is_seller) {
     $negotiations_query = "SELECT n.*, u.username as buyer_name 
-                          FROM price_Negotiation n 
+                          FROM price_negotiation n 
                           JOIN users u ON n.user_id = u.id 
                           WHERE n.product_id = ? AND n.seller_id = ?
                           ORDER BY n.created_at DESC";
@@ -158,7 +184,7 @@ if ($is_seller) {
     $stmt->bind_param("ii", $product_id, $user_id);
 } else {
     $negotiations_query = "SELECT n.* 
-                          FROM price_Negotiation n 
+                          FROM price_negotiation n 
                           WHERE n.product_id = ? AND n.user_id = ?
                           ORDER BY n.created_at DESC";
     $stmt = $con->prepare($negotiations_query);

@@ -12,7 +12,7 @@ session_start();
     <title>Login</title>
 </head>
 
-<body style="background-image: url('Background Images/Background Image.png'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
+<body style="background-image: url('Background Images/Background Image.jpeg'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
     <header style="background: transparent; padding: 10px;">
         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
             <img src="Background Images/CommUnity Logo.jpeg" alt="Company Logo" style="height: 70px;">
@@ -28,23 +28,85 @@ session_start();
                 $email = mysqli_real_escape_string($con, $_POST['email']);
                 $password = mysqli_real_escape_string($con, $_POST['password']);
 
-                $result = mysqli_query($con, "SELECT * FROM users WHERE Email='$email' AND Password='$password' ") or die("Select Error");
-                $row = mysqli_fetch_assoc($result);
+                // Use prepared statement for login
+                $stmt = $con->prepare("SELECT * FROM users WHERE Email = ?");
+                if (!$stmt) {
+                    echo "<div class='message error'>
+                    <p>Database error: " . $con->error . "</p> </div> <br>";
+                    echo "<a href='index.php'><button class='btn'>Go Back</button>";
+                    exit();
+                }
+                
+                $stmt->bind_param("s", $email);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $row = $result->fetch_assoc();
 
                 if (is_array($row) && !empty($row)) {
-                    $_SESSION['valid'] = $row['Email'];
-                    $_SESSION['username'] = $row['Username'];
-                    $_SESSION['age'] = $row['Age'];
-                    $_SESSION['id'] = $row['Id'];
+                    $login_successful = false;
+                    
+                    // First try password_verify for hashed passwords (new method)
+                    if (password_verify($password, $row['Password'])) {
+                        $login_successful = true;
+                    } 
+                    // Then try direct comparison for legacy passwords (old method)
+                    else if ($password === $row['Password']) {
+                        $login_successful = true;
+                        
+                        // Optionally upgrade the password to hashed version
+                        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                        $update_stmt = $con->prepare("UPDATE users SET Password = ? WHERE Id = ?");
+                        if ($update_stmt) {
+                            $update_stmt->bind_param("si", $hashed_password, $row['Id']);
+                            $update_stmt->execute();
+                            $update_stmt->close();
+                            // Log the password upgrade
+                            error_log("Password upgraded to hashed version for user ID: " . $row['Id']);
+                        }
+                    }
+                    
+                    if ($login_successful) {
+                        // Check if user is banned
+                        if (isset($row['status']) && $row['status'] === 'banned') {
+                            echo "<div class='message error' style='background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 15px; border-radius: 5px; margin-bottom: 20px;'>
+                            <p><strong>Account Suspended</strong></p>
+                            <p>Your account has been suspended by an administrator. Please contact support for more information.</p>
+                            </div> <br>";
+                            echo "<a href='index.php'><button class='btn'>Go Back</button>";
+                            
+                            // Add JavaScript popup alert for banned users
+                            echo "<script>
+                                window.onload = function() {
+                                    alert('Your account has been suspended by an administrator. Please contact support for more information.');
+                                }
+                            </script>";
+                        } else {
+                            $_SESSION['valid'] = $row['Email'];
+                            $_SESSION['username'] = $row['Username'];
+                            $_SESSION['age'] = $row['Age'];
+                            $_SESSION['id'] = $row['Id'];
+                            
+                            // Also store account balance in session for easy access
+                            $_SESSION['account_balance'] = isset($row['AccountBalance']) ? $row['AccountBalance'] : 0;
+                            
+                            // Redirect after setting session variables
+                            header("Location: home.php");
+                            exit();
+                        }
+                    } else {
+                        echo "<div class='message'>
+                        <p>Wrong Email or Password</p>
+                        </div> <br>";
+                        echo "<a href='index.php'><button class='btn'>Go Back</button>";
+                    }
                 } else {
                     echo "<div class='message'>
-                    <p>Wrong Username or Password</p>
+                    <p>Wrong Email or Password</p>
                     </div> <br>";
                     echo "<a href='index.php'><button class='btn'>Go Back</button>";
                 }
-                if (isset($_SESSION['valid'])) {
-                    header("Location: home.php");
-                }
+                
+                $stmt->close();
             } else {
             ?>
                 <header>Login</header>

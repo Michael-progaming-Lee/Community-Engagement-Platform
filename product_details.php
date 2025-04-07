@@ -49,6 +49,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
             error_log("Product not found: id={$product_id}");
             die(json_encode(['error' => 'Product not found']));
         }
+        
+        // Check if product is banned
+        if ($product['status'] === 'banned') {
+            error_log("Attempt to add banned product to cart: id={$product_id}");
+            die(json_encode(['error' => 'This product is no longer available']));
+        }
     
         error_log("Product found: " . print_r($product, true));
     
@@ -368,6 +374,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
     exit;
 }
 
+// Redirect if no product ID is provided
+if (!isset($_GET['id'])) {
+    header('Location: home.php');
+    exit;
+}
+
+$product_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
+// Get product details
+$query = "SELECT p.*, u.Username as product_seller, u.Id as seller_id 
+          FROM product p
+          JOIN users u ON p.product_seller_id = u.Id
+          WHERE p.id = ?";
+$stmt = $con->prepare($query);
+$stmt->bind_param("i", $product_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows === 0) {
+    // Product not found, redirect to home
+    header('Location: home.php');
+    exit;
+}
+
+$product = $result->fetch_assoc();
+
+// Check if product is banned and the current user is not the seller
+if ($product['status'] === 'banned' && $product['seller_id'] != $_SESSION['id']) {
+    // Redirect to home with a message
+    $_SESSION['message'] = 'The requested product is no longer available.';
+    header('Location: home.php');
+    exit;
+}
+
+// Check if the current user is the owner of the product
+$is_owner = ($product['product_seller_id'] == $_SESSION['id']);
+
 $username = $_SESSION['username'];
 $user_id = $_SESSION['id'];
 
@@ -433,7 +476,6 @@ $comments_result = $comments_stmt->get_result();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style/product_details.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <style>
         .container {
             max-width: 1200px;
@@ -445,11 +487,76 @@ $comments_result = $comments_stmt->get_result();
             background: rgba(255, 255, 255, 0.3);
             border-radius: 15px;
         }
+        
+        /* Main layout styling from layout.html */
+        .page-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            max-width: 1600px;
+            margin: 0 auto;
+            gap: 20px;
+            padding: 0 20px;
+        }
+        
+        .product-container {
+            flex: 1;
+            min-width: 300px;
+            max-width: 900px;
+        }
+        
+        .comments-sidebar {
+            flex: 0 0 350px;
+            align-self: flex-start;
+        }
+        
+        .comments-container {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            position: sticky;
+            top: 20px;
+        }
+        
+        .comments-list {
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        
+        .comment {
+            background: rgba(255, 255, 255, 0.6);
+            margin-bottom: 15px;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .comment-form {
+            margin-bottom: 25px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        /* Responsive layout */
+        @media (max-width: 992px) {
+            .comments-sidebar {
+                flex: 1 0 100%;
+                order: 2;
+            }
+            
+            .product-container {
+                flex: 1 0 100%;
+                order: 1;
+            }
+        }
+        
         .product-image {
             text-align: center;
             background: transparent;
             cursor: pointer;
         }
+        
         .product-image img {
             max-width: 100%;
             height: auto;
@@ -457,6 +564,7 @@ $comments_result = $comments_stmt->get_result();
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease;
         }
+        
         .product-image img:hover {
             transform: scale(1.02);
         }
@@ -474,6 +582,7 @@ $comments_result = $comments_stmt->get_result();
             justify-content: center;
             align-items: center;
         }
+        
         .modal-content {
             max-width: 90%;
             max-height: 90vh;
@@ -481,6 +590,7 @@ $comments_result = $comments_stmt->get_result();
             display: block;
             object-fit: contain;
         }
+        
         .close-modal {
             position: absolute;
             top: 15px;
@@ -491,26 +601,32 @@ $comments_result = $comments_stmt->get_result();
             cursor: pointer;
             transition: 0.3s;
         }
+        
         .close-modal:hover {
             color: #bbb;
         }
+        
         @keyframes zoom {
             from {transform: scale(0)}
             to {transform: scale(1)}
         }
+        
         .modal-content {
             animation-name: zoom;
             animation-duration: 0.6s;
         }
+        
         .product-info {
             background: transparent;
             padding: 25px;
             border-radius: 10px;
         }
+        
         .info-item {
             display: block;
             margin-bottom: 20px;
         }
+        
         .label {
             font-weight: bold;
             color: #2c3e50;
@@ -519,6 +635,7 @@ $comments_result = $comments_stmt->get_result();
             font-size: 16px;
             text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.5);
         }
+        
         .value {
             display: block;
             color: #333;
@@ -526,11 +643,13 @@ $comments_result = $comments_stmt->get_result();
             line-height: 1.6;
             text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.5);
         }
+        
         .price {
             font-size: 24px;
             color: #2c3e50;
             font-weight: bold;
         }
+        
         .rent-section {
             grid-column: 1 / -1;
             background: transparent;
@@ -538,21 +657,25 @@ $comments_result = $comments_stmt->get_result();
             border-radius: 10px;
             margin-top: 20px;
         }
+        
         .rent-form {
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
+        
         .form-group {
             display: flex;
             flex-direction: column;
             gap: 5px;
         }
+        
         .form-group label {
             font-weight: bold;
             color: #2c3e50;
             text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.5);
         }
+        
         .form-group input {
             padding: 10px;
             border: 1px solid rgba(221, 221, 221, 0.7);
@@ -560,10 +683,12 @@ $comments_result = $comments_stmt->get_result();
             border-radius: 5px;
             font-size: 16px;
         }
+        
         .button-group {
             display: flex;
             gap: 10px;
         }
+        
         .btn {
             padding: 12px 25px;
             border: none;
@@ -574,15 +699,18 @@ $comments_result = $comments_stmt->get_result();
             background: rgba(76, 68, 182, 0.808);
             color: white;
         }
+        
         .rent-btn {
             background: rgba(76, 68, 182, 0.808);
             color: white;
         }
+        
         .negotiate-btn {
             background: rgba(76, 68, 182, 0.808);
             color: white;
             text-decoration: none;
         }
+        
         .success {
             color: #1b5e20;
             background: rgba(232, 245, 233, 0.4);
@@ -591,6 +719,7 @@ $comments_result = $comments_stmt->get_result();
             margin: 10px 0;
             text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.5);
         }
+        
         .error {
             color: #b71c1c;
             background: rgba(255, 235, 238, 0.4);
@@ -599,12 +728,14 @@ $comments_result = $comments_stmt->get_result();
             margin: 10px 0;
             text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.5);
         }
+        
         .availability-calendar {
             margin: 20px 0;
             padding: 15px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 8px;
         }
+        
         .discount-info {
             margin: 10px 0;
             padding: 10px;
@@ -612,6 +743,7 @@ $comments_result = $comments_stmt->get_result();
             border-radius: 5px;
             color: #4CAF50;
         }
+        
         .date-range-picker {
             width: 100%;
             padding: 10px;
@@ -619,11 +751,13 @@ $comments_result = $comments_stmt->get_result();
             border-radius: 5px;
             margin-bottom: 10px;
         }
+        
         .error-message {
             color: #f44336;
             margin: 5px 0;
             font-size: 0.9em;
         }
+        
         .success-message {
             color: #4CAF50;
             margin: 5px 0;
@@ -638,169 +772,184 @@ $comments_result = $comments_stmt->get_result();
 
     <!-- Image Modal -->
     <div id="imageModal" class="modal">
-        <span class="close-modal">&times;</span>
+        <span class="close-modal" onclick="closeModal()">&times;</span>
         <img class="modal-content" id="modalImage">
     </div>
+    
+    <!-- Main Content with Flexbox Layout -->
+    <div class="page-wrapper">
+        <!-- Left Side - Product Details -->
+        <div class="product-container">
+            <div class="container">
+                <!-- Product Image -->
+                <div class="product-image">
+                    <img src="<?php echo htmlspecialchars($product['product_img']); ?>" 
+                         alt="<?php echo htmlspecialchars($product['product_name']); ?>"
+                         onclick="openModal(this.src)">
+                </div>
+                
+                <!-- Product Information -->
+                <div class="product-info">
+                    <span class="info-item">
+                        <span class="label">Product ID:</span>
+                        <span class="value"><?php echo htmlspecialchars($product['id']); ?></span>
+                    </span>
+                    
+                    <span class="info-item">
+                        <span class="label">Category:</span>
+                        <span class="value"><?php echo htmlspecialchars($product['product_category']); ?></span>
+                    </span>
+                    
+                    <span class="info-item">
+                        <span class="label">Description:</span>
+                        <span class="value"><?php echo nl2br(htmlspecialchars($product['product_description'])); ?></span>
+                    </span>
+                    
+                    <span class="info-item">
+                        <span class="label">Quantity Available:</span>
+                        <span class="value"><?php echo htmlspecialchars($product['product_quantity']); ?></span>
+                    </span>
+                    
+                    <span class="info-item">
+                        <span class="label">Listing Type:</span>
+                        <span class="value"><?php echo ucfirst(htmlspecialchars($product['listing_type'])); ?></span>
+                    </span>
+                    
+                    <span class="info-item">
+                        <?php if ($product['listing_type'] === 'sell'): ?>
+                            <span class="label">Price:</span>
+                            <span class="value price">$<?php echo number_format($product['product_cost'], 2); ?></span>
+                        <?php else: ?>
+                            <span class="label">Rental Rates:</span>
+                            <div class="value rental-rates">
+                                <?php 
+                                $has_rates = false;
+                                if ($product['daily_rate']): 
+                                    $has_rates = true;
+                                ?>
+                                    <div class="rate-item">
+                                        <strong>Daily Rate:</strong> $<?php echo number_format($product['daily_rate'], 2); ?>
+                                    </div>
+                                <?php endif; ?>
+                                
+                                <?php if ($product['weekly_rate']): 
+                                    $has_rates = true;
+                                ?>
+                                    <div class="rate-item">
+                                        <strong>Weekly Rate:</strong> $<?php echo number_format($product['weekly_rate'], 2); ?>
+                                    </div>
+                                <?php endif; ?>
+                                
+                                <?php if ($product['monthly_rate']): 
+                                    $has_rates = true;
+                                ?>
+                                    <div class="rate-item">
+                                        <strong>Monthly Rate:</strong> $<?php echo number_format($product['monthly_rate'], 2); ?>
+                                    </div>
+                                <?php endif; ?>
+                                
+                                <?php if (!$has_rates): ?>
+                                    <div class="rate-item">Contact seller for rental rates</div>
+                                <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                    </span>
+                    
+                    <span class="info-item">
+                        <span class="label">Seller:</span>
+                        <span class="value"><?php echo htmlspecialchars($product['product_seller']); ?></span>
+                    </span>
 
-    <div class="container">
-        <!-- Product Image -->
-        <div class="product-image">
-            <img src="<?php echo htmlspecialchars($product['product_img']); ?>" 
-                 alt="<?php echo htmlspecialchars($product['product_name']); ?>"
-                 onclick="openModal(this.src)">
+                    <?php if (!$is_owner): ?>
+                        <!-- Button Container using table layout for perfect side-by-side positioning -->
+                        <form method="post" class="cart-form" id="cartForm" onsubmit="return addToCart(event)">
+                            <!-- Hidden rental fields if this is a rental product -->
+                            <?php if ($product['listing_type'] === 'rent'): ?>
+                                <div class="rental-options" style="margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
+                                    <h4>Rental Options</h4>
+                                    <div class="form-group" style="margin-bottom: 15px;">
+                                        <label for="duration_unit">Rental Period:</label>
+                                        <select name="duration_unit" id="duration_unit" class="form-control" onchange="updateRentalPeriod()" style="width: 100%; padding: 8px; margin-top: 5px;">
+                                            <option value="daily" <?php echo isset($product['daily_rate']) && $product['daily_rate'] > 0 ? '' : 'disabled'; ?>>
+                                                Daily ($<?php echo isset($product['daily_rate']) && $product['daily_rate'] > 0 ? number_format($product['daily_rate'], 2) : 'N/A'; ?>)
+                                            </option>
+                                            <option value="weekly" selected>
+                                                Weekly ($<?php echo isset($product['weekly_rate']) && $product['weekly_rate'] > 0 ? number_format($product['weekly_rate'], 2) : number_format($product['product_cost'], 2); ?>)
+                                            </option>
+                                            <option value="monthly" <?php echo isset($product['monthly_rate']) && $product['monthly_rate'] > 0 ? '' : 'disabled'; ?>>
+                                                Monthly ($<?php echo isset($product['monthly_rate']) && $product['monthly_rate'] > 0 ? number_format($product['monthly_rate'], 2) : 'N/A'; ?>)
+                                            </option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group" style="margin-bottom: 15px;">
+                                        <label for="rental_start_date">Start Date:</label>
+                                        <input type="date" name="rental_start_date" id="rental_start_date" class="form-control" 
+                                               value="<?php echo date('Y-m-d'); ?>" min="<?php echo date('Y-m-d'); ?>" 
+                                               onchange="updateRentalDuration()" style="width: 100%; padding: 8px; margin-top: 5px;">
+                                    </div>
+                                    
+                                    <div class="form-group" style="margin-bottom: 15px;">
+                                        <label for="rental_end_date">End Date:</label>
+                                        <input type="date" name="rental_end_date" id="rental_end_date" class="form-control" 
+                                               value="<?php echo date('Y-m-d', strtotime('+7 days')); ?>" 
+                                               min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>" 
+                                               onchange="updateRentalDuration()" style="width: 100%; padding: 8px; margin-top: 5px;">
+                                    </div>
+                                    
+                                    <div class="rental-summary" style="background: #f9f9f9; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                                        <p><strong>Duration:</strong> <span id="duration_display">7</span> days</p>
+                                        <input type="hidden" name="total_days" id="total_days" value="7">
+                                        
+                                        <p><strong>Rate:</strong> $<span id="rate_display">
+                                            <?php echo isset($product['weekly_rate']) && $product['weekly_rate'] > 0 
+                                                ? number_format($product['weekly_rate'], 2) 
+                                                : number_format($product['product_cost'], 2); ?>
+                                        </span></p>
+                                        <input type="hidden" name="product_cost" id="product_cost" 
+                                               value="<?php echo isset($product['weekly_rate']) && $product['weekly_rate'] > 0 
+                                                        ? $product['weekly_rate'] 
+                                                        : $product['product_cost']; ?>">
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <input type="hidden" name="product_cost" value="<?php echo $product['product_cost']; ?>">
+                            <?php endif; ?>
+
+                            <input type="hidden" name="product_id" value="<?php echo htmlspecialchars($product['id']); ?>">
+                            
+                            <!-- Quantity selection for both purchase and rental -->
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label for="quantity" style="display: block; margin-bottom: 10px;">Quantity:</label>
+                                <div class="quantity-controls" style="display: flex; align-items: center;">
+                                    <button type="button" onclick="decrementQuantity()" class="quantity-btn" style="width: 30px; height: 30px;">-</button>
+                                    <input type="number" id="quantity" name="quantity" value="1" min="1" max="<?php echo $product['product_quantity']; ?>" required 
+                                           style="width: 60px; text-align: center; margin: 0 10px;">
+                                    <button type="button" onclick="incrementQuantity()" class="quantity-btn" style="width: 30px; height: 30px;">+</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Button row for cart and negotiation -->
+                            <div style="display: flex; gap: 10px;">
+                                <button type="submit" name="add_to_cart" class="btn" style="width: <?php echo ($product['listing_type'] !== 'rent') ? '50%' : '100%'; ?>; padding: 10px 0; font-size: 16px;">
+                                    Add to Cart
+                                </button>
+                            </form>
+                            <?php if ($product['listing_type'] !== 'rent'): ?>
+                            <a href="negotiate-price.php?product_id=<?php echo htmlspecialchars($product['id']); ?>" class="btn" 
+                               style="width: 50%; text-align: center; text-decoration: none; padding: 10px 0; font-size: 16px; display: inline-block;">
+                                Negotiate Price
+                            </a>
+                            <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                </div>
+
+            </div>
         </div>
         
-        <!-- Product Information -->
-        <div class="product-info">
-            <span class="info-item">
-                <span class="label">Product ID:</span>
-                <span class="value"><?php echo htmlspecialchars($product['id']); ?></span>
-            </span>
-            
-            <span class="info-item">
-                <span class="label">Category:</span>
-                <span class="value"><?php echo htmlspecialchars($product['product_category']); ?></span>
-            </span>
-            
-            <span class="info-item">
-                <span class="label">Description:</span>
-                <span class="value"><?php echo nl2br(htmlspecialchars($product['product_description'])); ?></span>
-            </span>
-            
-            <span class="info-item">
-                <span class="label">Quantity Available:</span>
-                <span class="value"><?php echo htmlspecialchars($product['product_quantity']); ?></span>
-            </span>
-            
-            <span class="info-item">
-                <span class="label">Listing Type:</span>
-                <span class="value"><?php echo ucfirst(htmlspecialchars($product['listing_type'])); ?></span>
-            </span>
-            
-            <span class="info-item">
-                <?php if ($product['listing_type'] === 'sell'): ?>
-                    <span class="label">Price:</span>
-                    <span class="value price">$<?php echo number_format($product['product_cost'], 2); ?></span>
-                <?php else: ?>
-                    <span class="label">Rental Rates:</span>
-                    <div class="value rental-rates">
-                        <?php 
-                        $has_rates = false;
-                        if ($product['daily_rate']): 
-                            $has_rates = true;
-                        ?>
-                            <div class="rate-item">
-                                <strong>Daily Rate:</strong> $<?php echo number_format($product['daily_rate'], 2); ?>
-                            </div>
-                        <?php endif; ?>
-                        
-                        <?php if ($product['weekly_rate']): 
-                            $has_rates = true;
-                        ?>
-                            <div class="rate-item">
-                                <strong>Weekly Rate:</strong> $<?php echo number_format($product['weekly_rate'], 2); ?>
-                            </div>
-                        <?php endif; ?>
-                        
-                        <?php if ($product['monthly_rate']): 
-                            $has_rates = true;
-                        ?>
-                            <div class="rate-item">
-                                <strong>Monthly Rate:</strong> $<?php echo number_format($product['monthly_rate'], 2); ?>
-                            </div>
-                        <?php endif; ?>
-                        
-                        <?php if (!$has_rates): ?>
-                            <div class="rate-item">Contact seller for rental rates</div>
-                        <?php endif; ?>
-                    </div>
-                <?php endif; ?>
-            </span>
-            
-            <span class="info-item">
-                <span class="label">Seller:</span>
-                <span class="value"><?php echo htmlspecialchars($product['product_seller']); ?></span>
-            </span>
-
-            <?php if (!$is_owner): ?>
-                <!-- Add to Cart Section -->
-                <div class="cart-section">
-                    <form method="post" class="cart-form" id="cartForm" onsubmit="return addToCart(event)">
-                        <!-- Hidden rental fields if this is a rental product -->
-                        <?php if ($product['listing_type'] === 'rent'): ?>
-                            <div class="rental-options" style="margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
-                                <h4>Rental Options</h4>
-                                <div class="form-group" style="margin-bottom: 15px;">
-                                    <label for="duration_unit">Rental Period:</label>
-                                    <select name="duration_unit" id="duration_unit" class="form-control" onchange="updateRentalPeriod()" style="width: 100%; padding: 8px; margin-top: 5px;">
-                                        <option value="daily" <?php echo isset($product['daily_rate']) && $product['daily_rate'] > 0 ? '' : 'disabled'; ?>>
-                                            Daily ($<?php echo isset($product['daily_rate']) && $product['daily_rate'] > 0 ? number_format($product['daily_rate'], 2) : 'N/A'; ?>)
-                                        </option>
-                                        <option value="weekly" selected>
-                                            Weekly ($<?php echo isset($product['weekly_rate']) && $product['weekly_rate'] > 0 ? number_format($product['weekly_rate'], 2) : number_format($product['product_cost'], 2); ?>)
-                                        </option>
-                                        <option value="monthly" <?php echo isset($product['monthly_rate']) && $product['monthly_rate'] > 0 ? '' : 'disabled'; ?>>
-                                            Monthly ($<?php echo isset($product['monthly_rate']) && $product['monthly_rate'] > 0 ? number_format($product['monthly_rate'], 2) : 'N/A'; ?>)
-                                        </option>
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group" style="margin-bottom: 15px;">
-                                    <label for="rental_start_date">Start Date:</label>
-                                    <input type="date" name="rental_start_date" id="rental_start_date" class="form-control" 
-                                           value="<?php echo date('Y-m-d'); ?>" min="<?php echo date('Y-m-d'); ?>" 
-                                           onchange="updateRentalDuration()" style="width: 100%; padding: 8px; margin-top: 5px;">
-                                </div>
-                                
-                                <div class="form-group" style="margin-bottom: 15px;">
-                                    <label for="rental_end_date">End Date:</label>
-                                    <input type="date" name="rental_end_date" id="rental_end_date" class="form-control" 
-                                           value="<?php echo date('Y-m-d', strtotime('+7 days')); ?>" 
-                                           min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>" 
-                                           onchange="updateRentalDuration()" style="width: 100%; padding: 8px; margin-top: 5px;">
-                                </div>
-                                
-                                <div class="rental-summary" style="background: #f9f9f9; padding: 10px; border-radius: 5px; margin-top: 10px;">
-                                    <p><strong>Duration:</strong> <span id="duration_display">7</span> days</p>
-                                    <input type="hidden" name="total_days" id="total_days" value="7">
-                                    
-                                    <p><strong>Rate:</strong> $<span id="rate_display">
-                                        <?php echo isset($product['weekly_rate']) && $product['weekly_rate'] > 0 
-                                            ? number_format($product['weekly_rate'], 2) 
-                                            : number_format($product['product_cost'], 2); ?>
-                                    </span></p>
-                                    <input type="hidden" name="product_cost" id="product_cost" 
-                                           value="<?php echo isset($product['weekly_rate']) && $product['weekly_rate'] > 0 
-                                                    ? $product['weekly_rate'] 
-                                                    : $product['product_cost']; ?>">
-                                </div>
-                            </div>
-                        <?php else: ?>
-                            <input type="hidden" name="product_cost" value="<?php echo $product['product_cost']; ?>">
-                        <?php endif; ?>
-
-                        <input type="hidden" name="product_id" value="<?php echo htmlspecialchars($product['id']); ?>">
-                        
-                        <!-- Quantity selection for both purchase and rental -->
-                        <div class="form-group" style="margin-bottom: 20px;">
-                            <label for="quantity" style="display: block; margin-bottom: 10px;">Quantity:</label>
-                            <div class="quantity-controls" style="display: flex; align-items: center;">
-                                <button type="button" onclick="decrementQuantity()" class="quantity-btn" style="width: 30px; height: 30px;">-</button>
-                                <input type="number" id="quantity" name="quantity" value="1" min="1" max="<?php echo $product['product_quantity']; ?>" required 
-                                       style="width: 60px; text-align: center; margin: 0 10px;">
-                                <button type="button" onclick="incrementQuantity()" class="quantity-btn" style="width: 30px; height: 30px;">+</button>
-                            </div>
-                        </div>
-                        
-                        <button type="submit" name="add_to_cart" class="btn"
-                                style="width: 100%; margin-top: 10px;">
-                            Add to Cart
-                        </button>
-                    </form>
-                <?php endif; ?>
-            </div>
-
-            <!-- Comments Section - Moved outside the main container -->
+        <!-- Right Side - Comments Section -->
+        <div class="comments-sidebar">
             <div class="comments-container">
                 <div class="comments-section">
                     <h2>Comments</h2>
@@ -809,9 +958,9 @@ $comments_result = $comments_stmt->get_result();
                     <form method="post" class="comment-form">
                         <div class="form-group">
                             <label for="comment_text">Add a Comment:</label>
-                            <textarea name="comment_text" id="comment_text" rows="3" required></textarea>
+                            <textarea name="comment_text" id="comment_text" rows="3" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: rgba(255, 255, 255, 0.7);"></textarea>
                         </div>
-                        <button type="submit" name="comment" class="btn comment-btn">Post Comment</button>
+                        <button type="submit" name="comment" class="btn comment-btn" style="margin-top: 10px;">Post Comment</button>
                     </form>
 
                     <!-- Display Comments -->
@@ -820,240 +969,242 @@ $comments_result = $comments_stmt->get_result();
                             <?php while ($comment = $comments_result->fetch_assoc()): ?>
                                 <div class="comment">
                                     <div class="comment-header">
-                                        <span class="comment-author"><?php echo htmlspecialchars($comment['username']); ?></span>
-                                        <span class="comment-date"><?php echo date('M d, Y H:i', strtotime($comment['created_at'])); ?></span>
+                                        <span class="comment-author" style="font-weight: bold; color: #2c3e50;"><?php echo htmlspecialchars($comment['username']); ?></span>
+                                        <span class="comment-date" style="color: #666; font-size: 0.9em;"><?php echo date('M d, Y H:i', strtotime($comment['created_at'])); ?></span>
                                     </div>
-                                    <div class="comment-content">
+                                    <div class="comment-content" style="margin-top: 8px; line-height: 1.5;">
                                         <?php echo htmlspecialchars($comment['comment_text']); ?>
                                     </div>
                                 </div>
                             <?php endwhile; ?>
                         <?php else: ?>
-                            <p class="no-comments">No comments yet. Be the first to comment!</p>
+                            <p class="no-comments" style="text-align: center; padding: 20px; color: #666; font-style: italic; background: rgba(255, 255, 255, 0.4); border-radius: 10px;">No comments yet. Be the first to comment!</p>
                         <?php endif; ?>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <script>
-                // Image modal functionality
-                function openModal(imgSrc) {
-                    const modal = document.getElementById('imageModal');
-                    const modalImg = document.getElementById('modalImage');
-                    modal.style.display = 'flex';
-                    modalImg.src = imgSrc;
-                }
+    <script>
+        // Image modal functionality
+        function openModal(imgSrc) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modal.style.display = 'flex';
+            modalImg.src = imgSrc;
+        }
 
-                // Close modal when clicking the X
-                document.querySelector('.close-modal').onclick = function() {
-                    document.getElementById('imageModal').style.display = 'none';
-                }
+        // Close modal when clicking the X
+        document.querySelector('.close-modal').onclick = function() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
 
-                // Close modal when clicking outside the image
-                document.getElementById('imageModal').onclick = function(e) {
-                    if (e.target === this) {
-                        this.style.display = 'none';
-                    }
-                }
+        // Close modal when clicking outside the image
+        document.getElementById('imageModal').onclick = function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
+            }
+        }
 
-                // Close modal with escape key
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Escape') {
-                        document.getElementById('imageModal').style.display = 'none';
-                    }
-                });
+        // Close modal with escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById('imageModal').style.display = 'none';
+            }
+        });
 
-                function updateRentalPeriod() {
-                    const durationUnitSelect = document.getElementById('duration_unit');
-                    const rateDisplay = document.getElementById('rate_display');
-                    const productCostInput = document.getElementById('product_cost');
-                    const durationUnit = durationUnitSelect.value;
+        function updateRentalPeriod() {
+            const durationUnitSelect = document.getElementById('duration_unit');
+            const rateDisplay = document.getElementById('rate_display');
+            const productCostInput = document.getElementById('product_cost');
+            const durationUnit = durationUnitSelect.value;
 
-                    if (durationUnit === 'daily') {
-                        rateDisplay.textContent = '<?php echo isset($product['daily_rate']) && $product['daily_rate'] > 0 ? number_format($product['daily_rate'], 2) : 'N/A'; ?>';
-                        productCostInput.value = '<?php echo isset($product['daily_rate']) && $product['daily_rate'] > 0 ? $product['daily_rate'] : '0'; ?>';
-                    } else if (durationUnit === 'weekly') {
-                        rateDisplay.textContent = '<?php echo isset($product['weekly_rate']) && $product['weekly_rate'] > 0 ? number_format($product['weekly_rate'], 2) : number_format($product['product_cost'], 2); ?>';
-                        productCostInput.value = '<?php echo isset($product['weekly_rate']) && $product['weekly_rate'] > 0 ? $product['weekly_rate'] : $product['product_cost']; ?>';
-                    } else if (durationUnit === 'monthly') {
-                        rateDisplay.textContent = '<?php echo isset($product['monthly_rate']) && $product['monthly_rate'] > 0 ? number_format($product['monthly_rate'], 2) : 'N/A'; ?>';
-                        productCostInput.value = '<?php echo isset($product['monthly_rate']) && $product['monthly_rate'] > 0 ? $product['monthly_rate'] : '0'; ?>';
-                    }
-                }
+            if (durationUnit === 'daily') {
+                rateDisplay.textContent = '<?php echo isset($product['daily_rate']) && $product['daily_rate'] > 0 ? number_format($product['daily_rate'], 2) : 'N/A'; ?>';
+                productCostInput.value = '<?php echo isset($product['daily_rate']) && $product['daily_rate'] > 0 ? $product['daily_rate'] : '0'; ?>';
+            } else if (durationUnit === 'weekly') {
+                rateDisplay.textContent = '<?php echo isset($product['weekly_rate']) && $product['weekly_rate'] > 0 ? number_format($product['weekly_rate'], 2) : number_format($product['product_cost'], 2); ?>';
+                productCostInput.value = '<?php echo isset($product['weekly_rate']) && $product['weekly_rate'] > 0 ? $product['weekly_rate'] : $product['product_cost']; ?>';
+            } else if (durationUnit === 'monthly') {
+                rateDisplay.textContent = '<?php echo isset($product['monthly_rate']) && $product['monthly_rate'] > 0 ? number_format($product['monthly_rate'], 2) : 'N/A'; ?>';
+                productCostInput.value = '<?php echo isset($product['monthly_rate']) && $product['monthly_rate'] > 0 ? $product['monthly_rate'] : '0'; ?>';
+            }
+        }
 
-                function updateRentalDuration() {
-                    const startDateInput = document.getElementById('rental_start_date');
-                    const endDateInput = document.getElementById('rental_end_date');
-                    const durationDisplay = document.getElementById('duration_display');
-                    const totalDaysInput = document.getElementById('total_days');
+        function updateRentalDuration() {
+            const startDateInput = document.getElementById('rental_start_date');
+            const endDateInput = document.getElementById('rental_end_date');
+            const durationDisplay = document.getElementById('duration_display');
+            const totalDaysInput = document.getElementById('total_days');
 
-                    const startDate = new Date(startDateInput.value);
-                    const endDate = new Date(endDateInput.value);
+            const startDate = new Date(startDateInput.value);
+            const endDate = new Date(endDateInput.value);
 
-                    let duration = Math.round((endDate - startDate) / (1000 * 3600 * 24));
+            let duration = Math.round((endDate - startDate) / (1000 * 3600 * 24));
 
-                    durationDisplay.textContent = duration;
-                    totalDaysInput.value = duration;
-                }
+            durationDisplay.textContent = duration;
+            totalDaysInput.value = duration;
+        }
 
-                function incrementQuantity() {
-                    const quantityInput = document.getElementById('quantity');
-                    const maxQuantity = <?php echo $product['product_quantity']; ?>;
-                    let currentValue = parseInt(quantityInput.value);
-                    
-                    if (currentValue < maxQuantity) {
-                        quantityInput.value = currentValue + 1;
-                    }
-                }
+        function incrementQuantity() {
+            const quantityInput = document.getElementById('quantity');
+            const maxQuantity = <?php echo $product['product_quantity']; ?>;
+            let currentValue = parseInt(quantityInput.value);
+            
+            if (currentValue < maxQuantity) {
+                quantityInput.value = currentValue + 1;
+            }
+        }
+        
+        function decrementQuantity() {
+            const quantityInput = document.getElementById('quantity');
+            let currentValue = parseInt(quantityInput.value);
+            
+            if (currentValue > 1) {
+                quantityInput.value = currentValue - 1;
+            }
+        }
+
+        function addToCart(event) {
+            event.preventDefault();
+            
+            // Create FormData from the form
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            // Get product type to see if it's a rental
+            const isRental = <?php echo ($product['listing_type'] === 'rent') ? 'true' : 'false'; ?>;
+            
+            // Validate rental fields if this is a rental product
+            if (isRental) {
+                const startDateInput = formData.get('rental_start_date');
+                const endDateInput = formData.get('rental_end_date');
+                const durationUnit = formData.get('duration_unit');
                 
-                function decrementQuantity() {
-                    const quantityInput = document.getElementById('quantity');
-                    let currentValue = parseInt(quantityInput.value);
-                    
-                    if (currentValue > 1) {
-                        quantityInput.value = currentValue - 1;
-                    }
-                }
-
-                function addToCart(event) {
-                    event.preventDefault();
-                    
-                    // Create FormData from the form
-                    const form = event.target;
-                    const formData = new FormData(form);
-                    
-                    // Get product type to see if it's a rental
-                    const isRental = <?php echo ($product['listing_type'] === 'rent') ? 'true' : 'false'; ?>;
-                    
-                    // Validate rental fields if this is a rental product
-                    if (isRental) {
-                        const startDateInput = formData.get('rental_start_date');
-                        const endDateInput = formData.get('rental_end_date');
-                        const durationUnit = formData.get('duration_unit');
-                        
-                        if (!startDateInput || !endDateInput) {
-                            alert('Please select both rental start and end dates');
-                            return false;
-                        }
-                        
-                        // Get today's date in YYYY-MM-DD format (server time)
-                        const serverToday = '<?php echo date("Y-m-d"); ?>';
-                        
-                        console.log('Start Date:', startDateInput);
-                        console.log('Today (Server):', serverToday);
-                        
-                        // Compare dates as strings in YYYY-MM-DD format
-                        if (startDateInput < serverToday) {
-                            alert('Rental start date cannot be in the past');
-                            return false;
-                        }
-                        
-                        if (endDateInput <= startDateInput) {
-                            alert('Rental end date must be after the start date');
-                            return false;
-                        }
-                        
-                        // Calculate duration in days
-                        const start = new Date(startDateInput);
-                        const end = new Date(endDateInput);
-                        const durationMs = end - start;
-                        const durationDays = Math.ceil(durationMs / (1000 * 60 * 60 * 24));
-                        
-                        if (durationDays <= 0) {
-                            alert('Invalid rental duration. Please select different dates.');
-                            return false;
-                        }
-                        
-                        // Check if rental duration exceeds maximum allowed period (21 days / 3 weeks)
-                        if (durationUnit === 'daily' && durationDays > 12) {
-                            alert('Maximum rental period for daily rentals is 12 days. Please adjust your dates.');
-                            return false;
-                        } else if (durationUnit === 'weekly' && durationDays > 21) {
-                            alert('Maximum rental period for weekly rentals is 21 days (3 weeks). Please adjust your dates.');
-                            return false;
-                        } else if (durationUnit === 'monthly' && durationDays > 122) {
-                            alert('Maximum rental period for monthly rentals is 122 days (4 months). Please adjust your dates.');
-                            return false;
-                        }
-                        
-                        formData.set('total_days', durationDays);
-                        console.log(`Rental duration: ${durationDays} days, unit: ${durationUnit}`);
-                    }
-                    
-                    // Get current quantity
-                    const quantity = parseInt(document.getElementById('quantity').value);
-                    if (isNaN(quantity) || quantity <= 0) {
-                        alert('Please enter a valid quantity');
-                        return false;
-                    }
-                    
-                    // Get submit button and show loading state
-                    const submitBtn = document.querySelector('button[type="submit"]');
-                    const originalText = submitBtn.innerHTML;
-                    submitBtn.innerHTML = 'Adding to Cart...';
-                    submitBtn.disabled = true;
-                    
-                    fetch('product_details.php', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        // Reset button state
-                        submitBtn.innerHTML = originalText;
-                        submitBtn.disabled = false;
-                        
-                        if (data.error) {
-                            alert(data.error);
-                        } else if (data.success) {
-                            // Show success message
-                            const successMessage = document.createElement('div');
-                            successMessage.className = 'alert alert-success';
-                            successMessage.style.position = 'fixed';
-                            successMessage.style.top = '20px';
-                            successMessage.style.left = '50%';
-                            successMessage.style.transform = 'translateX(-50%)';
-                            successMessage.style.padding = '15px 20px';
-                            successMessage.style.borderRadius = '5px';
-                            successMessage.style.backgroundColor = '#d4edda';
-                            successMessage.style.color = '#155724';
-                            successMessage.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
-                            successMessage.style.zIndex = '1000';
-                            successMessage.innerHTML = `<strong>Success!</strong> ${data.message}`;
-                            document.body.appendChild(successMessage);
-                            
-                            // Remove after 3 seconds
-                            setTimeout(() => {
-                                successMessage.remove();
-                            }, 3000);
-                            
-                            // Update cart count if applicable
-                            const cartCountElements = document.querySelectorAll('.cart-count');
-                            if (cartCountElements.length > 0) {
-                                // Fetch updated cart count
-                                fetch('admin_dashboard.php?action=get_cart_count')
-                                    .then(response => response.json())
-                                    .then(data => {
-                                        if (data.count !== undefined) {
-                                            cartCountElements.forEach(element => {
-                                                element.textContent = data.count;
-                                                element.style.display = data.count > 0 ? 'inline-block' : 'none';
-                                            });
-                                        }
-                                    })
-                                    .catch(error => console.error('Error updating cart count:', error));
-                            }
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        submitBtn.innerHTML = originalText;
-                        submitBtn.disabled = false;
-                        alert('An error occurred while adding to cart. Please try again.');
-                    });
-                    
+                if (!startDateInput || !endDateInput) {
+                    alert('Please select both rental start and end dates');
                     return false;
                 }
-            </script>
-        </body>
-    </html>
+                
+                // Get today's date in YYYY-MM-DD format (server time)
+                const serverToday = '<?php echo date("Y-m-d"); ?>';
+                
+                console.log('Start Date:', startDateInput);
+                console.log('Today (Server):', serverToday);
+                
+                // Compare dates as strings in YYYY-MM-DD format
+                if (startDateInput < serverToday) {
+                    alert('Rental start date cannot be in the past');
+                    return false;
+                }
+                
+                if (endDateInput <= startDateInput) {
+                    alert('Rental end date must be after the start date');
+                    return false;
+                }
+                
+                // Calculate duration in days
+                const start = new Date(startDateInput);
+                const end = new Date(endDateInput);
+                const durationMs = end - start;
+                const durationDays = Math.ceil(durationMs / (1000 * 60 * 60 * 24));
+                
+                if (durationDays <= 0) {
+                    alert('Invalid rental duration. Please select different dates.');
+                    return false;
+                }
+                
+                // Check if rental duration exceeds maximum allowed period (21 days / 3 weeks)
+                if (durationUnit === 'daily' && durationDays > 12) {
+                    alert('Maximum rental period for daily rentals is 12 days. Please adjust your dates.');
+                    return false;
+                } else if (durationUnit === 'weekly' && durationDays > 21) {
+                    alert('Maximum rental period for weekly rentals is 21 days (3 weeks). Please adjust your dates.');
+                    return false;
+                } else if (durationUnit === 'monthly' && durationDays > 122) {
+                    alert('Maximum rental period for monthly rentals is 122 days (4 months). Please adjust your dates.');
+                    return false;
+                }
+                
+                formData.set('total_days', durationDays);
+                console.log(`Rental duration: ${durationDays} days, unit: ${durationUnit}`);
+            }
+            
+            // Get current quantity
+            const quantity = parseInt(document.getElementById('quantity').value);
+            if (isNaN(quantity) || quantity <= 0) {
+                alert('Please enter a valid quantity');
+                return false;
+            }
+            
+            // Get submit button and show loading state
+            const submitBtn = document.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = 'Adding to Cart...';
+            submitBtn.disabled = true;
+            
+            fetch('product_details.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Reset button state
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                
+                if (data.error) {
+                    alert(data.error);
+                } else if (data.success) {
+                    // Show success message
+                    const successMessage = document.createElement('div');
+                    successMessage.className = 'alert alert-success';
+                    successMessage.style.position = 'fixed';
+                    successMessage.style.top = '20px';
+                    successMessage.style.left = '50%';
+                    successMessage.style.transform = 'translateX(-50%)';
+                    successMessage.style.padding = '15px 20px';
+                    successMessage.style.borderRadius = '5px';
+                    successMessage.style.backgroundColor = '#d4edda';
+                    successMessage.style.color = '#155724';
+                    successMessage.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+                    successMessage.style.zIndex = '1000';
+                    successMessage.innerHTML = `<strong>Success!</strong> ${data.message}`;
+                    document.body.appendChild(successMessage);
+                    
+                    // Remove after 3 seconds
+                    setTimeout(() => {
+                        successMessage.remove();
+                    }, 3000);
+                    
+                    // Update cart count if applicable
+                    const cartCountElements = document.querySelectorAll('.cart-count');
+                    if (cartCountElements.length > 0) {
+                        // Fetch updated cart count
+                        fetch('admin_dashboard.php?action=get_cart_count')
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.count !== undefined) {
+                                    cartCountElements.forEach(element => {
+                                        element.textContent = data.count;
+                                        element.style.display = data.count > 0 ? 'inline-block' : 'none';
+                                    });
+                                }
+                            })
+                            .catch(error => console.error('Error updating cart count:', error));
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                alert('An error occurred while adding to cart. Please try again.');
+            });
+            
+            return false;
+        }
+    </script>
+</body>
+</html>

@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_negotiations']
     $negotiation_ids = $_POST['negotiation_ids'] ?? [];
     if (!empty($negotiation_ids)) {
         $ids_string = implode(',', array_map('intval', $negotiation_ids));
-        $delete_query = "DELETE FROM price_Negotiation 
+        $delete_query = "DELETE FROM price_negotiation 
                         WHERE id IN ($ids_string) 
                         AND (seller_response = 'rejected' OR seller_response = 'accepted')
                         AND (user_id = ? OR 
@@ -50,7 +50,7 @@ $negotiations_query = "SELECT n.*,
                                 WHEN p.product_seller_id = ? THEN u_buyer.Username
                                 ELSE u_seller.Username
                              END as other_party
-                      FROM price_Negotiation n
+                      FROM price_negotiation n
                       JOIN product p ON n.product_id = p.id
                       JOIN users u_buyer ON n.user_id = u_buyer.Id
                       JOIN users u_seller ON p.product_seller_id = u_seller.Id

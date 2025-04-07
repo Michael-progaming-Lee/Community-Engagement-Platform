@@ -34,63 +34,226 @@ $products_result = $stmt->get_result();
     <link rel="stylesheet" href="style/manage_product.css">
     <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
     <title>Manage Your Products</title>
+    <style>
+        body {
+            background-image: url('Background Images/Home_Background.png');
+            background-size: cover;
+            background-position: top center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: Arial, sans-serif;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 1200px;
+            width: calc(100% - 40px);
+            margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .table {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            width: 100%;
+            table-layout: auto;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .table thead th {
+            background: rgba(44, 62, 80, 0.05);
+            color: #2c3e50;
+            font-weight: 600;
+            border-bottom: 2px solid rgba(44, 62, 80, 0.1);
+            padding: 15px;
+            text-align: left;
+            white-space: nowrap;
+        }
+        
+        .table tbody td {
+            padding: 12px 15px;
+            border: 1px solid #eee;
+            vertical-align: middle;
+        }
+        
+        .product-image, .qr-code {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .product-image:hover, .qr-code:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+        
+        /* Image modal styles */
+        .image-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            padding-top: 50px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+        
+        .modal-content {
+            margin: auto;
+            display: block;
+            max-width: 80%;
+            max-height: 80%;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        
+        .close-modal:hover {
+            color: #bbb;
+        }
+        
+        .modal-caption {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+            text-align: center;
+            color: #ccc;
+            padding: 10px 0;
+            height: 150px;
+        }
+        
+        /* Style for clickable images */
+        .clickable-image {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .clickable-image:hover {
+            transform: scale(1.1);
+        }
+    </style>
 </head>
-<body style="background-image: url('Background Images/Home_Background.png'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
+<body>
     <?php include("php/header.php"); ?>
     <h1 style="color: #333; text-align: center; margin: 20px 0;">Manage Products</h1>
 
-    <div class="container" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin: 20px 40px;">
+    <div class="container">
         <!-- Display user's current products -->
-        <div class="current-products">
-            <h2 style="color: #333; margin-bottom: 20px;">Your Products</h2>
+        <div class="current-products" style="width: 100%;">
+            <h2 style="color: #333; margin-bottom: 20px; text-align: center;">Your Products</h2>
             <?php if ($products_result && $products_result->num_rows > 0): ?>
-                <div style="overflow-x: auto;">
-                    <table style="width: 100%; border-collapse: collapse; background: rgba(255, 255, 255, 0.9); margin-bottom: 20px;">
+                <div style="overflow-x: auto; width: 100%;">
+                    <table class="table">
                         <thead>
                             <tr>
-                                <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">ID</th>
-                                <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">Image</th>
-                                <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">QR Code</th>
-                                <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">Name</th>
-                                <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">Category</th>
-                                <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd;">Description</th>
-                                <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">Quantity</th>
-                                <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">Price/Rates</th>
-                                <th style="padding: 12px; text-align: left; background: rgba(102, 153, 204, 0.8); color: white; border: 1px solid #ddd; white-space: nowrap;">Listing Type</th>
+                                <th>ID</th>
+                                <th>Image</th>
+                                <th>QR Code</th>
+                                <th>Name</th>
+                                <th>Category</th>
+                                <th>Description</th>
+                                <th>Quantity</th>
+                                <th>Price/Rates</th>
+                                <th>Listing Type</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php while ($product_row = $products_result->fetch_assoc()): ?>
-                                <tr>
-                                    <td style="padding: 12px; border: 1px solid #ddd; white-space: nowrap;"><?php echo htmlspecialchars($product_row['id']); ?></td>
-                                    <td style="padding: 12px; border: 1px solid #ddd; white-space: nowrap;">
+                            <?php while ($product_row = $products_result->fetch_assoc()): 
+                                $is_banned = isset($product_row['status']) && $product_row['status'] === 'banned';
+                                $row_style = $is_banned ? 'background-color: rgba(255, 200, 200, 0.3);' : '';
+                            ?>
+                                <tr style="<?php echo $row_style; ?>">
+                                    <td><?php echo htmlspecialchars($product_row['id']); ?></td>
+                                    <td>
                                         <img src="<?php echo htmlspecialchars($product_row['product_img']); ?>" 
                                              alt="<?php echo htmlspecialchars($product_row['product_name']); ?>" 
-                                             style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                                             class="product-image clickable-image"
+                                             onclick="openImageModal('<?php echo htmlspecialchars($product_row['product_img']); ?>', '<?php echo htmlspecialchars($product_row['product_name']); ?>')">
                                     </td>
-                                    <td style="padding: 12px; border: 1px solid #ddd; white-space: nowrap;">
+                                    <td>
                                         <?php if (!empty($product_row['product_qr_code'])): ?>
                                             <img src="<?php echo htmlspecialchars($product_row['product_qr_code']); ?>" 
-                                                 alt="QR Code for <?php echo htmlspecialchars($product_row['product_name']); ?>" 
-                                                 style="width: 50px; height: 50px; object-fit: contain;">
+                                                 alt="QR Code" 
+                                                 class="qr-code clickable-image"
+                                                 onclick="openImageModal('<?php echo htmlspecialchars($product_row['product_qr_code']); ?>', 'QR Code for <?php echo htmlspecialchars($product_row['product_name']); ?> - Scan to view product')">
                                         <?php else: ?>
-                                            <div id="qrcode_<?php echo $product_row['id']; ?>" style="width: 50px; height: 50px;"></div>
+                                            <div id="qrcode_<?php echo $product_row['id']; ?>" style="width: 60px; height: 60px;" class="clickable-image qr-code"></div>
                                             <script>
-                                                new QRCode(document.getElementById("qrcode_<?php echo $product_row['id']; ?>"), {
-                                                    text: "http://<?php echo $_SERVER['HTTP_HOST']; ?>/Community%20Engagement%20Platform/product_details.php?id=<?php echo $product_row['id']; ?>",
-                                                    width: 50,
-                                                    height: 50
+                                                // Create QR code with absolute URL for better phone scanning
+                                                var productUrl = "<?php 
+                                                    // Get the full domain and protocol
+                                                    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+                                                    $domain = $_SERVER['HTTP_HOST'];
+                                                    
+                                                    // Create absolute URL to the product details page
+                                                    $product_url = $protocol . $domain . '/Community%20Engagement%20Platform/product_details.php?id=' . $product_row['id'];
+                                                    echo $product_url;
+                                                ?>";
+                                                
+                                                // Generate QR code with higher error correction for better scanning
+                                                var qrcode = new QRCode(document.getElementById("qrcode_<?php echo $product_row['id']; ?>"), {
+                                                    text: productUrl,
+                                                    width: 60,
+                                                    height: 60,
+                                                    colorDark : "#000000",
+                                                    colorLight : "#ffffff",
+                                                    correctLevel : QRCode.CorrectLevel.H // High error correction level
+                                                });
+                                                
+                                                // Make the generated QR code clickable
+                                                document.getElementById("qrcode_<?php echo $product_row['id']; ?>").addEventListener('click', function() {
+                                                    // Create a temporary canvas to get the data URL of the QR code
+                                                    var canvas = document.querySelector("#qrcode_<?php echo $product_row['id']; ?> canvas");
+                                                    if (canvas) {
+                                                        var dataUrl = canvas.toDataURL("image/png");
+                                                        openImageModal(dataUrl, 'QR Code for <?php echo htmlspecialchars($product_row['product_name']); ?> - Scan to view product');
+                                                    }
                                                 });
                                             </script>
                                         <?php endif; ?>
                                     </td>
-                                    <td style="padding: 12px; border: 1px solid #ddd; white-space: nowrap;"><?php echo htmlspecialchars($product_row['product_name']); ?></td>
-                                    <td style="padding: 12px; border: 1px solid #ddd; white-space: nowrap;"><?php echo htmlspecialchars($product_row['product_category']); ?></td>
-                                    <td style="padding: 12px; border: 1px solid #ddd; min-width: 300px; max-width: 500px;">
-                                        <?php echo nl2br(htmlspecialchars($product_row['product_description'])); ?>
-                                    </td>
-                                    <td style="padding: 12px; border: 1px solid #ddd; white-space: nowrap;"><?php echo htmlspecialchars($product_row['product_quantity']); ?></td>
-                                    <td style="padding: 12px; border: 1px solid #ddd;">
+                                    <td><?php echo htmlspecialchars($product_row['product_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($product_row['product_category']); ?></td>
+                                    <td style="min-width: 300px; max-width: 500px;"><?php echo nl2br(htmlspecialchars($product_row['product_description'])); ?></td>
+                                    <td><?php echo htmlspecialchars($product_row['product_quantity']); ?></td>
+                                    <td>
                                         <?php if ($product_row['listing_type'] === 'sell'): ?>
                                             $<?php echo number_format($product_row['product_cost'], 2); ?>
                                         <?php else: ?>
@@ -108,7 +271,17 @@ $products_result = $stmt->get_result();
                                             <?php endif; ?>
                                         <?php endif; ?>
                                     </td>
-                                    <td style="padding: 12px; border: 1px solid #ddd; white-space: nowrap; text-transform: capitalize;"><?php echo htmlspecialchars($product_row['listing_type']); ?></td>
+                                    <td style="text-transform: capitalize;"><?php echo htmlspecialchars($product_row['listing_type']); ?></td>
+                                    <td>
+                                        <?php if ($is_banned): ?>
+                                            <span style="color: #dc3545; font-weight: bold;">BANNED</span>
+                                            <div style="font-size: 0.8em; color: #666;">
+                                                This product has been banned by an administrator and is not visible to buyers.
+                                            </div>
+                                        <?php else: ?>
+                                            <span style="color: #28a745;">Active</span>
+                                        <?php endif; ?>
+                                    </td>
                                 </tr>
                             <?php endwhile; ?>
                         </tbody>
@@ -123,10 +296,10 @@ $products_result = $stmt->get_result();
         </div>
     </div>
 
-    <div class="container" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin: 20px 40px;">
+    <div class="container">
                 <!-- Update or Delete Product Form -->
-        <div class="manage-form">
-            <h2>Update or Delete Product</h2>
+        <div class="manage-form" style="width: 100%; max-width: 800px;">
+            <h2 style="text-align: center;">Update or Delete Product</h2>
             <p>Select the ID of the product you want to modify from your products list above:</p>
             
             <form method="post">
@@ -324,4 +497,46 @@ $products_result = $stmt->get_result();
         ?>
     </div>
 </body>
+
+<!-- Image Modal -->
+<div id="imageModal" class="image-modal">
+    <span class="close-modal" onclick="closeImageModal()">&times;</span>
+    <img class="modal-content" id="modalImage">
+    <div id="modalCaption" class="modal-caption"></div>
+</div>
+
+<script>
+    // Function to open the image modal
+    function openImageModal(src, caption) {
+        var modal = document.getElementById('imageModal');
+        var modalImg = document.getElementById('modalImage');
+        var captionText = document.getElementById('modalCaption');
+        
+        modal.style.display = "block";
+        modalImg.src = src;
+        captionText.innerHTML = caption;
+        
+        // For QR codes, make the modal image larger for easier scanning
+        if (caption.includes('QR Code')) {
+            modalImg.style.maxWidth = "350px";
+            modalImg.style.maxHeight = "350px";
+        } else {
+            modalImg.style.maxWidth = "80%";
+            modalImg.style.maxHeight = "80%";
+        }
+    }
+    
+    // Function to close the image modal
+    function closeImageModal() {
+        document.getElementById('imageModal').style.display = "none";
+    }
+    
+    // Close the modal when clicking outside of the image
+    window.onclick = function(event) {
+        var modal = document.getElementById('imageModal');
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+</script>
 </html>

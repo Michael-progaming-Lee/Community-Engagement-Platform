@@ -749,7 +749,7 @@ while ($item = $cart_result->fetch_assoc()) {
                     </span>
                     
                     <?php if ($current_balance < $cart_total): ?>
-                        <a href="add_funds.php" class="add-funds-link">
+                        <a href="edituserinfo.php" class="add-funds-link">
                             <i class="fas fa-plus-circle"></i> Add Funds
                         </a>
                     <?php endif; ?>

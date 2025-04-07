@@ -194,7 +194,7 @@ if (isset($_SESSION['error_message'])) {
                     $<?php echo number_format($current_balance, 2); ?>
                 </span>
                 <?php if ($current_balance <= $low_balance_threshold): ?>
-                    <a href="add_funds.php" class="add-funds-link">
+                    <a href="edituserinfo.php" class="add-funds-link">
                         <i class="fas fa-plus-circle"></i> Add Funds
                     </a>
                 <?php endif; ?>

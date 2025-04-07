@@ -519,7 +519,7 @@ $has_sufficient_balance = $user_data['AccountBalance'] >= $total_cost;
                     $<?php echo number_format($user_data['AccountBalance'], 2); ?>
                 </span>
                 <?php if (!$has_sufficient_balance): ?>
-                    <a href="add_funds.php" class="add-funds-link">
+                    <a href="edituserinfo.php" class="add-funds-link">
                         <i class="fas fa-plus-circle"></i> Add Funds
                     </a>
                 <?php endif; ?>

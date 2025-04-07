@@ -12,10 +12,10 @@ session_start();
     <title>Admin Login</title>
 </head>
 
-<body style="background-image: url('Background Images/Background Image.png'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
+<body style="background-image: url('Background Images/Background Image.jpeg'); background-size: cover; background-position: top center; background-repeat: no-repeat; background-attachment: fixed; min-height: 100vh; margin: 0; padding: 0; width: 100%; height: 100%;">
     <header style="background: transparent; padding: 10px;">
         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-            <img src="Background Images/CommUnity Logo.png" alt="Company Logo" style="height: 70px;">
+            <img src="Background Images/CommUnity Logo.jpeg" alt="Company Logo" style="height: 70px;">
             <h1 style="margin: 0; position: absolute; left: 50%; transform: translateX(-50%); color: #6699CCFFFF; background: rgba(147, 163, 178, 0.8)">CommUnity Rentals</h1>
         </div>
     </header>

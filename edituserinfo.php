@@ -57,11 +57,18 @@ if (!isset($_SESSION['valid'])) {
                     if ($add_amount > 0) {
                         echo "<p>Profile Updated! Added $" . number_format($add_amount, 2) . " to your account.</p>";
                         echo "<p>New balance: $" . number_format($new_balance, 2) . "</p>";
+                        
+                        // Update session balance
+                        $_SESSION['account_balance'] = $new_balance;
+                        
+                        echo "</div> <br>";
+                        echo "<a href='edituserinfo.php'><button class='btn'>Back to Profile</button>";
+                        echo "<a href='home.php'><button class='btn' style='margin-left: 10px;'>Go Home</button>";
                     } else {
                         echo "<p>Profile Updated!</p>";
+                        echo "</div> <br>";
+                        echo "<a href='home.php'><button class='btn'>Go Home</button>";
                     }
-                    echo "</div> <br>";
-                    echo "<a href='home.php'><button class='btn'>Go Home</button>";
                 }
             } else {
                 $id = $_SESSION['id'];
