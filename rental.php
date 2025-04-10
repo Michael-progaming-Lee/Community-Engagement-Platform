@@ -278,14 +278,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 // Handle rental report submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'report_overdue') {
     // Validate required fields
-    if (!isset($_POST['rental_id']) || !isset($_POST['report_reason'])) {
-        $_SESSION['error_message'] = "Missing required fields for report.";
+    if (!isset($_POST['rental_id'])) {
+        $_SESSION['error_message'] = "Missing rental ID for report.";
         header("Location: rental.php");
         exit;
     }
     
     $rental_id = $_POST['rental_id'];
-    $report_reason = $_POST['report_reason'];
+    $report_reason = "Rental overdue by more than 10 days"; // Default reason
     $user_id = $_SESSION['id']; // Current user (seller)
     
     try {
@@ -316,9 +316,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         }
         
         // Check if this rental has already been reported
-        $check_query = "SELECT id FROM rental_reports WHERE rental_id = ?";
+        $check_query = "SELECT id FROM rental_reports WHERE product_id = ? AND buyer_id = ? AND seller_id = ?";
         $check_stmt = mysqli_prepare($con, $check_query);
-        mysqli_stmt_bind_param($check_stmt, "i", $rental_id);
+        mysqli_stmt_bind_param($check_stmt, "iii", $rental_data['product_id'], $rental_data['buyer_id'], $user_id);
         mysqli_stmt_execute($check_stmt);
         $check_result = mysqli_stmt_get_result($check_stmt);
         
@@ -326,21 +326,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             throw new Exception("This rental has already been reported.");
         }
         
-        // Insert report into rental_reports table
-        $insert_query = "INSERT INTO rental_reports (rental_id, product_id, buyer_id, seller_id, days_overdue, report_reason) 
-                        VALUES (?, ?, ?, ?, ?, ?)";
-        $insert_stmt = mysqli_prepare($con, $insert_query);
-        mysqli_stmt_bind_param($insert_stmt, "iiiiss", 
-                              $rental_id, 
-                              $rental_data['product_id'], 
-                              $rental_data['buyer_id'], 
-                              $user_id, 
-                              $days_overdue, 
-                              $report_reason);
+        // Table is assumed to already exist
         
-        if (!mysqli_stmt_execute($insert_stmt)) {
-            throw new Exception("Error submitting report: " . mysqli_error($con));
+        // Insert report into rental_reports table
+        $insert_query = "INSERT INTO rental_reports (product_id, product_name, buyer_id, seller_id, days_overdue) 
+                        VALUES (?, ?, ?, ?, ?)";
+        $insert_stmt = mysqli_prepare($con, $insert_query);
+        
+        if (!$insert_stmt) {
+            $_SESSION['error_message'] = "Failed to prepare statement: " . mysqli_error($con);
+            header("Location: rental.php");
+            exit;
         }
+        
+        // Debug information
+        $debug_info = "Product ID: {$rental_data['product_id']}, Product Name: {$rental_data['product_name']}, 
+                      Buyer ID: {$rental_data['buyer_id']}, Seller ID: $user_id, 
+                      Days Overdue: $days_overdue";
+        
+        // Try to bind parameters
+        if (!mysqli_stmt_bind_param($insert_stmt, "isiii", 
+                               $rental_data['product_id'],
+                               $rental_data['product_name'],
+                               $rental_data['buyer_id'], 
+                               $user_id, 
+                               $days_overdue)) {
+            $_SESSION['error_message'] = "Failed to bind parameters: " . mysqli_stmt_error($insert_stmt) . " - " . $debug_info;
+            header("Location: rental.php");
+            exit;
+        }
+        
+        // Try to execute the statement
+        if (!mysqli_stmt_execute($insert_stmt)) {
+            $_SESSION['error_message'] = "Error submitting report: " . mysqli_stmt_error($insert_stmt) . " - " . $debug_info;
+            header("Location: rental.php");
+            exit;
+        }
+        
+        // Success message with details
+        $_SESSION['success_message'] = "Report successfully submitted for rental #$rental_id. Report ID: " . mysqli_insert_id($con);
         
         // Send notification to admin
         $admin_query = "SELECT Id FROM users WHERE UserType = 'admin' LIMIT 1";
@@ -925,6 +949,117 @@ if ($overdue_check_stmt) {
         .delete-form {
             margin-top: 10px;
         }
+        
+        .report-button {
+            padding: 8px 16px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        
+        .report-button:hover {
+            background: #c0392b;
+        }
+        
+        /* Custom Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-container {
+            background-color: white;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #7f8c8d;
+        }
+        
+        .modal-body {
+            padding: 15px;
+        }
+        
+        .modal-footer {
+            padding: 15px;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: inherit;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -1097,6 +1232,16 @@ if ($overdue_check_stmt) {
                                             <?php if ($rental['is_overdue']): ?>
                                                 <p class="days-overdue"><strong>Overdue by:</strong> <?php echo abs($rental['days_remaining']); ?> days</p>
                                                 <span class="rental-status status-overdue">Overdue</span>
+                                                
+                                                <?php if (abs($rental['days_remaining']) >= 10): ?>
+                                                    <form method="post" action="rental.php" style="margin-top: 10px;">
+                                                        <input type="hidden" name="action" value="report_overdue">
+                                                        <input type="hidden" name="rental_id" value="<?php echo $rental['id']; ?>">
+                                                        <button type="submit" class="report-button">
+                                                            <i class="fas fa-flag"></i> Report User
+                                                        </button>
+                                                    </form>
+                                                <?php endif; ?>
                                             <?php else: ?>
                                                 <p class="days-remaining"><strong>Days Remaining:</strong> <?php echo $rental['days_remaining']; ?></p>
                                                 <span class="rental-status status-rented">Active</span>
@@ -1162,11 +1307,18 @@ if ($overdue_check_stmt) {
                     document.getElementById(tabId).classList.add('active');
                 });
             });
+            
+            // Modal event listeners removed
         });
         
         function confirmDelete() {
             return confirm("Are you sure you want to delete this rental history record? This action cannot be undone.");
         }
+        
+        // Modal functions removed since we're submitting directly
     </script>
+    
+    <!-- Removed modal code since we're now submitting directly -->
+
 </body>
 </html>
