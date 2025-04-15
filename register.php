@@ -136,8 +136,8 @@
                         throw new Exception("Invalid email format");
                     }
                     
-                    // Hash the password for security
-                    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                    // Password is stored as plain text now
+                    // No hashing is applied to the password
                     
                     // Set initial account balance to 0
                     $initial_balance = 0.00;
@@ -166,14 +166,14 @@
                         if ($next_id !== null) {
                             $insert_stmt = $con->prepare("INSERT INTO users(Id, Username, Email, Age, Parish, Password, AccountBalance) VALUES(?, ?, ?, ?, ?, ?, ?)");
                             if ($insert_stmt) {
-                                $insert_stmt->bind_param("ississd", $next_id, $username, $email, $age, $parish, $hashed_password, $initial_balance);
+                                $insert_stmt->bind_param("ississd", $next_id, $username, $email, $age, $parish, $password, $initial_balance);
                             } else {
                                 // Fall back to standard INSERT if prepare fails
                                 $insert_stmt = $con->prepare("INSERT INTO users(Username, Email, Age, Parish, Password, AccountBalance) VALUES(?, ?, ?, ?, ?, ?)");
                                 if (!$insert_stmt) {
                                     throw new Exception("Database error: " . $con->error);
                                 }
-                                $insert_stmt->bind_param("ssissd", $username, $email, $age, $parish, $hashed_password, $initial_balance);
+                                $insert_stmt->bind_param("ssissd", $username, $email, $age, $parish, $password, $initial_balance);
                             }
                         } else {
                             // Use standard INSERT without explicit ID if we couldn't determine the next ID
@@ -181,7 +181,7 @@
                             if (!$insert_stmt) {
                                 throw new Exception("Database error: " . $con->error);
                             }
-                            $insert_stmt->bind_param("ssissd", $username, $email, $age, $parish, $hashed_password, $initial_balance);
+                            $insert_stmt->bind_param("ssissd", $username, $email, $age, $parish, $password, $initial_balance);
                         }
                         
                         if ($insert_stmt->execute()) {

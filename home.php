@@ -39,7 +39,7 @@ if ($selected_category !== 'all' && in_array($selected_category, $categories)) {
         case 'id':
             $search_condition = "p.Id = ?";
             break;
-        default: // name
+        default: 
             $search_condition = "p.product_name LIKE CONCAT('%', ?, '%')";
     }
     
@@ -80,7 +80,7 @@ if ($selected_category !== 'all' && in_array($selected_category, $categories)) {
         case 'id':
             $search_condition = "p.Id = ?";
             break;
-        default: // name
+        default: 
             $search_condition = "p.product_name LIKE CONCAT('%', ?, '%')";
     }
     

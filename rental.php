@@ -1317,8 +1317,6 @@ if ($overdue_check_stmt) {
         
         // Modal functions removed since we're submitting directly
     </script>
-    
-    <!-- Removed modal code since we're now submitting directly -->
 
 </body>
 </html>

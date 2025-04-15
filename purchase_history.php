@@ -19,7 +19,7 @@ $balance_result = mysqli_stmt_get_result($balance_stmt);
 $user_data = mysqli_fetch_assoc($balance_result);
 $current_balance = $user_data['AccountBalance'];
 
-// Define low balance threshold (you might want to adjust this value)
+// Define low balance threshold
 $low_balance_threshold = 10.00; // Show warning when balance is below $10
 
 // Check if purchase_history table exists

@@ -234,7 +234,7 @@ $products_result = $stmt->get_result();
                                                     height: 60,
                                                     colorDark : "#000000",
                                                     colorLight : "#ffffff",
-                                                    correctLevel : QRCode.CorrectLevel.H // High error correction level
+                                                    correctLevel : QRCode.CorrectLevel.H // error correction
                                                 });
                                                 
                                                 // Make the generated QR code clickable

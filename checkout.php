@@ -11,7 +11,7 @@ if (!isset($_SESSION['id'])) {
 // Function to process checkout
 function processCheckout($con, $user_id, $items_to_checkout, $selected_total) {
     try {
-        // Enable error reporting for detailed debugging
+        // Enable error reporting for debugging
         error_reporting(E_ALL);
         ini_set('display_errors', 1);
         
@@ -19,7 +19,6 @@ function processCheckout($con, $user_id, $items_to_checkout, $selected_total) {
         mysqli_begin_transaction($con);
         
         // 1. Deduct the total cost from the user's balance
-        // Use COALESCE to handle NULL values in AccountBalance
         $balance_query = "UPDATE users SET AccountBalance = COALESCE(AccountBalance, 0) - ? WHERE Id = ?";
         $balance_stmt = $con->prepare($balance_query);
         
@@ -53,92 +52,6 @@ function processCheckout($con, $user_id, $items_to_checkout, $selected_total) {
             
             if (!mysqli_query($con, $create_table_query)) {
                 throw new Exception("Error creating purchase_history table: " . mysqli_error($con));
-            }
-        }
-        
-        // Check if rental_products table exists
-        $rental_table_check = mysqli_query($con, "SHOW TABLES LIKE 'rental_products'");
-        
-        // Create the rental_products table if it doesn't exist
-        if (mysqli_num_rows($rental_table_check) == 0) {
-            $create_rental_table_query = "CREATE TABLE IF NOT EXISTS rental_products (
-                id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                product_id INT(11) NOT NULL,
-                buyer_id INT(11) NOT NULL,
-                seller_id INT(11) NOT NULL,
-                rental_price DECIMAL(10,2) NOT NULL,
-                rental_start_date DATE NOT NULL,
-                rental_end_date DATE NOT NULL,
-                rental_duration INT(11) NOT NULL,
-                duration_unit VARCHAR(20) NOT NULL DEFAULT 'days',
-                status VARCHAR(20) NOT NULL DEFAULT 'rented',
-                return_date DATE NULL,
-                late_fee DECIMAL(10,2) DEFAULT 0.00,
-                notes TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                INDEX buyer_idx (buyer_id),
-                INDEX product_idx (product_id),
-                INDEX status_idx (status)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
-            
-            if (!mysqli_query($con, $create_rental_table_query)) {
-                throw new Exception("Error creating rental_products table: " . mysqli_error($con));
-            }
-        }
-        
-        // Check if notifications table exists
-        $notifications_table_check = mysqli_query($con, "SHOW TABLES LIKE 'notifications'");
-        
-        // Create the notifications table if it doesn't exist
-        if (mysqli_num_rows($notifications_table_check) == 0) {
-            $create_notifications_table = "CREATE TABLE IF NOT EXISTS notifications (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                user_id INT NOT NULL,
-                type VARCHAR(50) NOT NULL,
-                message TEXT NOT NULL,
-                related_id INT NULL,
-                is_read BOOLEAN DEFAULT FALSE,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                INDEX (user_id),
-                INDEX (type),
-                INDEX (is_read)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
-            
-            if (!mysqli_query($con, $create_notifications_table)) {
-                throw new Exception("Error creating notifications table: " . mysqli_error($con));
-            }
-        }
-        
-        // Check if delivery_status table exists
-        $delivery_table_check = mysqli_query($con, "SHOW TABLES LIKE 'delivery_status'");
-        
-        // Create the delivery_status table if it doesn't exist
-        if (mysqli_num_rows($delivery_table_check) == 0) {
-            $create_delivery_status_table = "CREATE TABLE IF NOT EXISTS delivery_status (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                purchase_id INT NOT NULL COMMENT 'ID from purchase_history table',
-                product_id INT NOT NULL,
-                buyer_id INT NOT NULL,
-                seller_id INT NOT NULL,
-                amount DECIMAL(10,2) NOT NULL,
-                is_rental BOOLEAN DEFAULT FALSE,
-                sent_for_delivery BOOLEAN DEFAULT FALSE,
-                sent_date TIMESTAMP NULL,
-                received_by_buyer BOOLEAN DEFAULT FALSE,
-                received_date TIMESTAMP NULL,
-                payment_processed BOOLEAN DEFAULT FALSE,
-                status VARCHAR(50) DEFAULT 'pending' COMMENT 'pending, shipped, delivered, cancelled',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                INDEX (purchase_id),
-                INDEX (buyer_id),
-                INDEX (seller_id),
-                INDEX (status)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
-            
-            if (!mysqli_query($con, $create_delivery_status_table)) {
-                throw new Exception("Error creating delivery status table: " . mysqli_error($con));
             }
         }
         
@@ -353,7 +266,6 @@ function processCheckout($con, $user_id, $items_to_checkout, $selected_total) {
     }
 }
 
-// Handle AJAX request from process_cashout.php
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['selectedProducts'])) {
     $user_id = $_SESSION['id'];
     $selected_products = json_decode($_POST['selectedProducts']);

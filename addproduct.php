@@ -72,7 +72,7 @@ mysqli_query($con, $alter_query);
             document.querySelectorAll('input[name="listing_type"]').forEach(radio => {
                 radio.addEventListener('change', toggleRentalOptions);
             });
-            toggleRentalOptions(); // Initialize the form state
+            toggleRentalOptions();
         }
     </script>
 </head>

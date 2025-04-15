@@ -48,12 +48,10 @@ session_start();
                     // First try password_verify for hashed passwords (new method)
                     if (password_verify($password, $row['Password'])) {
                         $login_successful = true;
-                    } 
-                    // Then try direct comparison for legacy passwords (old method)
+                    }                    
                     else if ($password === $row['Password']) {
                         $login_successful = true;
                         
-                        // Optionally upgrade the password to hashed version
                         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
                         $update_stmt = $con->prepare("UPDATE users SET Password = ? WHERE Id = ?");
                         if ($update_stmt) {

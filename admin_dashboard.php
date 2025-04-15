@@ -1358,7 +1358,7 @@ if (!isset($_SESSION['admin_valid'])) {
                 <!-- Overdue Rental Reports -->
                 <div class="report-section" style="background: rgba(255, 255, 255, 0.9); padding: 25px; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
                     <h3 style="color: #e74c3c; font-size: 22px; margin-bottom: 20px; display: flex; align-items: center;">
-                        <i class="fas fa-exclamation-triangle" style="margin-right: 10px;"></i> Overdue Rental Reports
+                        <i class="fas fa-exclamation-triangle" style="margin-right: 10px;"></i> Overdue Rental Reports (not fully functional)
                     </h3>
                     
                     <?php
@@ -1826,8 +1826,8 @@ if (!isset($_SESSION['admin_valid'])) {
 
         // Function to edit user
         function editUser(userId) {
-            // Edit user functionality
-            alert('Edit user functionality will be implemented for user ID: ' + userId);
+            // Redirect to the user edit page with the user ID
+            window.location.href = 'admin_edit_user.php?id=' + userId;
         }
 
         // Function to delete user
