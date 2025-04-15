@@ -264,7 +264,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
                 error_log("Inserting rental product: duration={$rental_duration}, unit={$duration_unit}, rate={$rate}");
                 error_log("Rental product details: \n    Start Date: {$rental_start_date}\n    End Date: {$rental_end_date}\n    Duration: {$rental_duration} days\n    Unit: {$duration_unit}\n    Rate: {$rate}");
 
-                // Check if the users_cart table has the necessary columns
+                // ULTRA-SIMPLE APPROACH FOR MAXIMUM COMPATIBILITY
+                // This approach focuses on simplicity and compatibility
+                
+                // First, get a valid ID
+                $next_id = 1;
+                $max_id_query = "SELECT MAX(Id) as max_id FROM users_cart";
+                $max_id_result = $con->query($max_id_query);
+                if ($max_id_result && $max_id_row = $max_id_result->fetch_assoc()) {
+                    if ($max_id_row['max_id'] !== null) {
+                        $next_id = (int)$max_id_row['max_id'] + 1;
+                    }
+                }
+                error_log("Generated cart ID: {$next_id}");
+                
+                // Ensure all potential columns exist
+                error_log("Checking for necessary columns in users_cart table");
+                
+
+                
                 $check_columns_query = "SHOW COLUMNS FROM users_cart LIKE 'listing_type'";
                 $columns_result = $con->query($check_columns_query);
                 
@@ -289,12 +307,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
                     $con->query($alter_table_query);
                 }
 
+                // For rental items, include rental fields
                 $insert_query = "INSERT INTO users_cart (
-                    UserID, product_id, product_name, product_category, 
+                    Id, UserID, product_id, product_name, product_category, 
                     product_description, product_img, product_cost, 
                     product_quantity, product_total, listing_type,
                     rental_start_date, rental_end_date, rental_duration, duration_unit
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 error_log("Insert cart query: {$insert_query}");
                 error_log("Rental dates being inserted: start={$rental_start_date}, end={$rental_end_date}");
@@ -308,7 +327,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
                 // Use 'rent' as the listing_type for rentals
                 $listing_type = 'rent';
                 
-                $stmt->bind_param("iissssddisssis", 
+                // Include the generated ID in the binding
+                $stmt->bind_param("iiissssddisssis", 
+                    $next_id,
                     $user_id, 
                     $product_id, 
                     $product['product_name'], 
@@ -328,11 +349,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
                 // Use the product's listing_type for purchase items
                 $listing_type = $product['listing_type'];
                 
+                // Simple approach - set basic fields
                 $insert_query = "INSERT INTO users_cart (
-                    UserID, product_id, product_name, product_category, 
+                    Id, UserID, product_id, product_name, product_category, 
                     product_description, product_img, product_cost, 
                     product_quantity, product_total, listing_type
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 $stmt = $con->prepare($insert_query);
                 if ($stmt === false) {
@@ -340,7 +362,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'])) {
                     die(json_encode(['error' => 'Database error: ' . $con->error]));
                 }
                 
-                $stmt->bind_param("iissssdids", 
+                $stmt->bind_param("iiissssdids", 
+                    $next_id,
                     $user_id, 
                     $product_id, 
                     $product['product_name'], 
