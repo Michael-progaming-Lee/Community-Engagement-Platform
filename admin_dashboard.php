@@ -19,6 +19,51 @@ function add_notification($con, $user_id, $message, $type, $related_id = null) {
     return $stmt->execute();
 }
 
+// Handle user deletion action
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete_user') {
+    header('Content-Type: application/json');
+    
+    if (!isset($_POST['user_id']) || empty($_POST['user_id'])) {
+        echo json_encode(['success' => false, 'message' => 'User ID is required']);
+        exit;
+    }
+    
+    $user_id = intval($_POST['user_id']);
+    
+    // Force disable foreign key checks to ensure deletion works
+    $con->query('SET FOREIGN_KEY_CHECKS=0');
+    
+    // Check if user exists before attempting to delete
+    $check_sql = "SELECT Id FROM users WHERE Id = ?";
+    $check_stmt = $con->prepare($check_sql);
+    $check_stmt->bind_param("i", $user_id);
+    $check_stmt->execute();
+    $check_result = $check_stmt->get_result();
+    
+    if ($check_result->num_rows === 0) {
+        // User does not exist
+        $con->query('SET FOREIGN_KEY_CHECKS=1'); // Re-enable foreign key checks
+        echo json_encode(['success' => false, 'message' => 'User not found']);
+        exit;
+    }
+    
+    // Delete user
+    $delete_sql = "DELETE FROM users WHERE Id = $user_id";
+    $delete_result = $con->query($delete_sql);
+    
+    // Re-enable foreign key checks
+    $con->query('SET FOREIGN_KEY_CHECKS=1');
+    
+    if ($delete_result) {
+        echo json_encode(['success' => true, 'message' => 'User successfully deleted']);
+    } else {
+        // If it still fails
+        echo json_encode(['success' => false, 'message' => 'Failed to delete user: ' . $con->error]);
+    }
+    
+    exit;
+}
+
 // Handle rental report admin actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     header('Content-Type: application/json');
@@ -1833,8 +1878,34 @@ if (!isset($_SESSION['admin_valid'])) {
         // Function to delete user
         function deleteUser(userId) {
             if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
-                // Delete user functionality
-                alert('Delete user functionality will be implemented for user ID: ' + userId);
+                console.log('Deleting user ID:', userId); // Debug logging
+                // Send AJAX request to delete the user
+                fetch('admin_dashboard.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: 'action=delete_user&user_id=' + userId
+                })
+                .then(response => {
+                    console.log('Response status:', response.status); // Debug logging
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Response data:', data); // Debug logging
+                    if (data.success) {
+                        alert('User successfully deleted.');
+                        // Refresh the user list
+                        resetSearch();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while trying to delete the user.');
+                });
             }
         }
 
